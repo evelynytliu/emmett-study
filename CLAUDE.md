@@ -267,6 +267,18 @@
   產出統一的 `ContentItem`，給首頁科目卡與科目頁 `/subject/[id]` 用。
 - 暑假作業的科目對應寫在這裡的 `HOMEWORK_SUBJECT`（作業 id → 科目）。
 
+### 國文「形音義」精熟模組 — `src/content/hanzi/`
+- 來源：參考書《搶救形音義大作戰》（`參考文件/形音義大作戰/` 的照片）；
+  題目**例句重寫**、考點（字＋讀音/寫法＋常見錯法）照書。路由 `/hanzi/[id]`，
+  掛章節地圖 `chinese-pre-2 字音字形`。**會持續加新的天數**（步驟見 AUTHORING.md §4）。
+- 兩種題型：`zhuyin`（看字寫注音，站內注音鍵盤作答）、`char`（看注音寫國字，
+  手寫板＋Google 手寫辨識 `src/lib/handwriting.ts`；辨識連不上自動退回「對照答案自評」，
+  跟 AI fallback 同精神）。
+- **精熟循環（Epop 式）**：答錯的字 3 題後回鍋、要**連對 2 次**才過關；
+  「一次就對」才是實力分。引擎 `src/components/hanzi-player.tsx`。
+- 儲存：`src/lib/hanzi-storage.ts`（localStorage 彙總＋Supabase `mathconcept_hanzi_attempts`
+  append-only）。`npm run validate` 會檢查形音義結構（標記/注音格式/單字答案）。
+
 ### 頁面結構（改版後）
 - `/`（首頁）：**五科 hub**——上方三個小統計（等級感）、五張科目卡、
   數學專屬的「課表/螺旋複習」進階入口、暑假作業降為次要入口。舊的作業列表移到 `/homework`。

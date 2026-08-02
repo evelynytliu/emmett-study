@@ -133,6 +133,21 @@ create table if not exists public.mathconcept_quiz_attempts (
 create index if not exists mathconcept_quiz_attempts_quiz_idx
   on public.mathconcept_quiz_attempts (quiz_id, created_at desc);
 
+-- ── 國文形音義（注音精熟 / 手寫國字）答題存檔 ──────────
+-- 每完成一輪 append 一筆。self_judged = 手寫辨識連不上、改用自評過關的題數。
+create table if not exists public.mathconcept_hanzi_attempts (
+  id uuid primary key default gen_random_uuid(),
+  set_id text not null,
+  first_try_correct int not null default 0,
+  total int not null default 0,
+  wrong_question_ids jsonb not null default '[]'::jsonb,
+  self_judged int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists mathconcept_hanzi_attempts_set_idx
+  on public.mathconcept_hanzi_attempts (set_id, created_at desc);
+
 -- 完整先修課表：每個步驟完成紀錄（學單元 / 複習檢核點 / 結業）
 create table if not exists public.mathconcept_course_progress (
   id uuid primary key default gen_random_uuid(),
@@ -154,6 +169,7 @@ alter table public.mathconcept_diagnoses enable row level security;
 alter table public.mathconcept_course_progress enable row level security;
 alter table public.mathconcept_wenyan_progress enable row level security;
 alter table public.mathconcept_quiz_attempts enable row level security;
+alter table public.mathconcept_hanzi_attempts enable row level security;
 
 drop policy if exists "mathconcept allow all progress" on public.mathconcept_progress;
 create policy "mathconcept allow all progress" on public.mathconcept_progress
@@ -197,4 +213,8 @@ create policy "mathconcept allow all wenyan" on public.mathconcept_wenyan_progre
 
 drop policy if exists "mathconcept allow all quiz attempts" on public.mathconcept_quiz_attempts;
 create policy "mathconcept allow all quiz attempts" on public.mathconcept_quiz_attempts
+  for all using (true) with check (true);
+
+drop policy if exists "mathconcept allow all hanzi attempts" on public.mathconcept_hanzi_attempts;
+create policy "mathconcept allow all hanzi attempts" on public.mathconcept_hanzi_attempts
   for all using (true) with check (true);

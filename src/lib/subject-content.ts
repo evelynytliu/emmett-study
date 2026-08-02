@@ -10,6 +10,7 @@ import { subjects, type Subject, type SubjectId } from "@/content/subjects";
 import { units } from "@/content";
 import { wenyanWords } from "@/content/wenyan";
 import { quizzes } from "@/content/quizzes";
+import { hanziSets } from "@/content/hanzi";
 import { homeworks } from "@/content/homework";
 import { historyScenes } from "@/content/history";
 
@@ -18,6 +19,7 @@ export type ContentKind =
   | "unit"
   | "wenyan"
   | "quiz"
+  | "hanzi"
   | "homework-draft"
   | "vocab"
   | "history";
@@ -82,6 +84,20 @@ export function contentForSubject(subjectId: SubjectId): ContentItem[] {
   }
 
   if (subjectId === "chinese") {
+    for (const h of hanziSets) {
+      items.push({
+        key: `hanzi-${h.id}`,
+        kind: "hanzi",
+        href: `/hanzi/${h.id}`,
+        title: `形音義・${h.title}`,
+        subtitle: h.subtitle,
+        badge:
+          h.kind === "zhuyin"
+            ? `注音精熟・${h.questions.length} 字`
+            : `手寫國字・${h.questions.length} 字`,
+        topicId: "chinese-pre-2",
+      });
+    }
     for (const w of wenyanWords) {
       items.push({
         key: `wenyan-${w.id}`,

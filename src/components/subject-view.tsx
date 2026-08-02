@@ -7,12 +7,21 @@ import * as React from "react";
 import Link from "next/link";
 import type { Subject } from "@/content/subjects";
 import type { ContentItem } from "@/lib/subject-content";
-import { getQuizRecord, type QuizRecord } from "@/lib/quiz-storage";
+import { getQuizRecord } from "@/lib/quiz-storage";
+import { getHanziRecord } from "@/lib/hanzi-storage";
+
+// 科目頁只需要這三個欄位（題組與形音義的紀錄共用同一形狀）
+interface ProgressBadge {
+  attempts: number;
+  bestFirstTry: number;
+  total: number;
+}
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
+  Brush,
   CheckCircle2,
   Landmark,
   Map as MapIcon,
@@ -26,6 +35,7 @@ const KIND_ICON: Record<ContentItem["kind"], React.ComponentType<{ className?: s
   unit: BookOpen,
   wenyan: ScrollText,
   quiz: Trophy,
+  hanzi: Brush,
   "homework-draft": PenLine,
   vocab: SpellCheck2,
   history: Landmark,
@@ -39,15 +49,18 @@ export function SubjectView({
   items: ContentItem[];
 }) {
   const [quizRecords, setQuizRecords] = React.useState<
-    Record<string, QuizRecord>
+    Record<string, ProgressBadge>
   >({});
 
   React.useEffect(() => {
-    const map: Record<string, QuizRecord> = {};
+    const map: Record<string, ProgressBadge> = {};
     for (const it of items) {
+      const id = it.href.split("/").pop()!;
       if (it.kind === "quiz") {
-        const id = it.href.split("/").pop()!;
         const r = getQuizRecord(id);
+        if (r) map[id] = r;
+      } else if (it.kind === "hanzi") {
+        const r = getHanziRecord(id);
         if (r) map[id] = r;
       }
     }
@@ -119,7 +132,9 @@ export function SubjectView({
             {items.map((it) => {
               const Icon = KIND_ICON[it.kind];
               const quizId =
-                it.kind === "quiz" ? it.href.split("/").pop()! : null;
+                it.kind === "quiz" || it.kind === "hanzi"
+                  ? it.href.split("/").pop()!
+                  : null;
               const rec = quizId ? quizRecords[quizId] : undefined;
               return (
                 <Link

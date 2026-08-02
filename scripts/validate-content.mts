@@ -13,6 +13,7 @@ import { units } from "../src/content";
 import { wenyanWords } from "../src/content/wenyan";
 import { homeworks } from "../src/content/homework";
 import { historyScenes } from "../src/content/history";
+import { hanziSets } from "../src/content/hanzi";
 
 let errors = 0;
 let warnings = 0;
@@ -86,6 +87,51 @@ console.log("\n📝 線上題組 quizzes/");
     }
   }
   if (errors === 0) ok(`${quizzes.length} 組題目、共 ${quizzes.reduce((n, q) => n + q.questions.length, 0)} 題，結構正確`);
+}
+
+// ── 國文形音義 ──
+console.log("\n✍️ 形音義 hanzi/");
+{
+  const ZHUYIN_RE = /^[ㄅ-ㄩ]+[ˊˇˋ˙]?$|^˙[ㄅ-ㄩ]+$/;
+  const seen = new Set<string>();
+  const orders = new Set<number>();
+  for (const s of hanziSets) {
+    const tag = `[${s.id}]`;
+    if (seen.has(s.id)) err(`${tag} 題組 id 重複`);
+    seen.add(s.id);
+    if (orders.has(s.order)) warn(`${tag} order 重複：${s.order}`);
+    orders.add(s.order);
+    if (s.questions.length === 0) err(`${tag} 沒有任何題目`);
+
+    const qseen = new Set<string>();
+    for (const q of s.questions) {
+      const qt = `${tag} 題 ${q.id}`;
+      if (qseen.has(q.id)) err(`${qt} 題目 id 在組內重複`);
+      qseen.add(q.id);
+      const marks = q.sentence.match(/【.+?】/g) ?? [];
+      if (marks.length !== 1)
+        err(`${qt} 題幹必須恰好有一個【目標】標記（目前 ${marks.length} 個）`);
+      if (!q.explanation?.trim()) err(`${qt} 缺詳解 explanation`);
+      if (!q.concept?.trim()) err(`${qt} 缺考點標籤 concept`);
+      if (q.kind === "zhuyin") {
+        if (!ZHUYIN_RE.test(q.answer))
+          err(`${qt} 注音答案格式不對：「${q.answer}」（只能是注音符號＋調號）`);
+        const target = marks[0]?.slice(1, -1) ?? "";
+        if (/[ㄅ-ㄩ]/.test(target))
+          err(`${qt} 注音題的【目標】應該是國字，卻是注音：${target}`);
+      } else if (q.kind === "char") {
+        if (!/^[㐀-鿿]$/.test(q.answer))
+          err(`${qt} 國字答案必須是單一個國字：「${q.answer}」`);
+        const target = marks[0]?.slice(1, -1) ?? "";
+        if (!/^[ㄅ-ㄩˊˇˋ˙]+$/.test(target))
+          err(`${qt} 國字題的【目標】應該是注音，卻是：${target}`);
+      }
+    }
+  }
+  if (errors === 0)
+    ok(
+      `${hanziSets.length} 天、共 ${hanziSets.reduce((n, s) => n + s.questions.length, 0)} 個字，結構正確`,
+    );
 }
 
 // ── 數學單元 ──
