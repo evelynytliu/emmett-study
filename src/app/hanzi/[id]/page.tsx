@@ -9,5 +9,5 @@ export function generateStaticParams() {
 export default function HanziPage({ params }: { params: { id: string } }) {
   const set = getHanziSet(params.id);
   if (!set) notFound();
-  return <HanziPlayer set={set} />;
+  return <HanziPlayer />;
 }

@@ -1,9 +1,11 @@
 "use client";
 
-// 形音義精熟循環引擎（Epop 式）。
+// 形音義「大題庫」精熟循環引擎（Epop 式）。
 //
-// 跟通用題組的差別：答錯的題不只回鍋，還要「連續答對 2 次」才過關，
-// 而且回鍋題會安插在幾題之後馬上再考（不是排到最尾端），確保當下就補起來。
+// 所有天數檔的題目合併成一個題庫；每輪抽 10 個字來練：
+//   還沒精熟／之前答錯的字優先 → 再來是還沒見過的新字 → 全精熟後輪最久沒練的複習。
+// 輪內規則：答錯的字 3 題後回鍋、要連續答對 2 次才算過這一輪；
+// 「一次就對」的字才標記為精熟（存本機＋雲端，跨場次、跨裝置累積）。
 //
 // 兩種作答方式：
 //   - 注音題：站內注音鍵盤（iPad 不用切輸入法）
@@ -11,9 +13,19 @@
 
 import * as React from "react";
 import Link from "next/link";
-import type { HanziSet, HanziQuestion } from "@/content/hanzi/types";
+import {
+  allHanziQuestions,
+  type HanziPoolQuestion,
+} from "@/content/hanzi";
+import type { HanziQuestion } from "@/content/hanzi/types";
 import { getSubject } from "@/content/subjects";
-import { saveHanziAttempt } from "@/lib/hanzi-storage";
+import {
+  getHanziPoolLocal,
+  saveHanziAttempt,
+  saveHanziPool,
+  syncHanziPool,
+  type HanziPoolState,
+} from "@/lib/hanzi-storage";
 import { recognizeHandwriting, type Stroke } from "@/lib/handwriting";
 import { cn } from "@/lib/utils";
 import {
@@ -252,15 +264,7 @@ const HandwritingBox = React.forwardRef<
 });
 
 // ── 題幹渲染：把【目標】高亮成大字 ──────────────────────
-function Sentence({
-  q,
-  color,
-  hideAnswer,
-}: {
-  q: HanziQuestion;
-  color: string;
-  hideAnswer?: boolean;
-}) {
+function Sentence({ q, color }: { q: HanziQuestion; color: string }) {
   const m = q.sentence.match(/^(.*)【(.+?)】(.*)$/s);
   if (!m) return <p className="text-lg leading-loose">{q.sentence}</p>;
   const [, pre, target, post] = m;
@@ -271,18 +275,32 @@ function Sentence({
         className="mx-0.5 inline-flex min-w-[2.2rem] items-center justify-center rounded-lg border-b-4 px-2 py-0.5 align-middle text-xl font-black"
         style={{ borderColor: color, background: `${color}14`, color }}
       >
-        {hideAnswer ? "？" : target}
+        {target}
       </span>
       {post}
     </p>
   );
 }
 
+// ── 抽題：未精熟（答錯過優先）→ 沒見過 → 最久沒練的複習 ──
+const ROUND_SIZE = 10;
+
+function buildBatch(pool: HanziPoolState): HanziPoolQuestion[] {
+  const wrongFirst = allHanziQuestions
+    .filter((q) => pool[q.uid] && !pool[q.uid].m)
+    .sort((a, b) => (pool[a.uid].s < pool[b.uid].s ? -1 : 1));
+  const fresh = allHanziQuestions.filter((q) => !pool[q.uid]);
+  const review = allHanziQuestions
+    .filter((q) => pool[q.uid]?.m)
+    .sort((a, b) => (pool[a.uid].s < pool[b.uid].s ? -1 : 1));
+  return [...wrongFirst, ...fresh, ...review].slice(0, ROUND_SIZE);
+}
+
 // ── 精熟循環主引擎 ──────────────────────────────────────
-const NEED_AFTER_WRONG = 2; // 答錯後要連續答對幾次才過關
+const NEED_AFTER_WRONG = 2; // 答錯後要連續答對幾次才過這一輪
 const REINSERT_GAP = 3; // 回鍋題安插在幾題之後
 
-type Phase = "answering" | "feedback" | "selfjudge" | "done";
+type Phase = "loading" | "answering" | "feedback" | "selfjudge" | "done";
 
 interface Feedback {
   correct: boolean;
@@ -290,19 +308,19 @@ interface Feedback {
   bySelfJudge?: boolean;
 }
 
-export function HanziPlayer({ set }: { set: HanziSet }) {
+export function HanziPlayer() {
   const subject = getSubject("chinese");
   const color = subject?.color.main ?? "hsl(350 72% 52%)";
-  const total = set.questions.length;
+  const poolTotal = allHanziQuestions.length;
 
-  const [queue, setQueue] = React.useState<string[]>(() =>
-    set.questions.map((q) => q.id),
-  );
+  const [pool, setPool] = React.useState<HanziPoolState>({});
+  const [batch, setBatch] = React.useState<HanziPoolQuestion[]>([]);
+  const [queue, setQueue] = React.useState<string[]>([]);
   const [need, setNeed] = React.useState<Record<string, number>>({});
   const [attempted, setAttempted] = React.useState<Set<string>>(new Set());
   const [firstTry, setFirstTry] = React.useState<Record<string, boolean>>({});
-  const [mastered, setMastered] = React.useState(0);
-  const [phase, setPhase] = React.useState<Phase>("answering");
+  const [cleared, setCleared] = React.useState(0);
+  const [phase, setPhase] = React.useState<Phase>("loading");
   const [fb, setFb] = React.useState<Feedback | null>(null);
   const [typed, setTyped] = React.useState("");
   const [strokeCount, setStrokeCount] = React.useState(0);
@@ -311,13 +329,54 @@ export function HanziPlayer({ set }: { set: HanziSet }) {
   const [saved, setSaved] = React.useState(false);
   const padRef = React.useRef<HandwritingBoxHandle>(null);
 
-  const current = set.questions.find((q) => q.id === queue[0]);
+  const startRound = React.useCallback((p: HanziPoolState) => {
+    const b = buildBatch(p);
+    setBatch(b);
+    setQueue(b.map((q) => q.uid));
+    setNeed({});
+    setAttempted(new Set());
+    setFirstTry({});
+    setCleared(0);
+    setFb(null);
+    setTyped("");
+    setStrokeCount(0);
+    setSelfJudged(0);
+    setSaved(false);
+    padRef.current?.clear();
+    setPhase("answering");
+  }, []);
+
+  // 進場：拉雲端狀態合併後開第一輪；雲端太慢（>2.5 秒）就直接用本機，不讓孩子等
+  React.useEffect(() => {
+    let alive = true;
+    void (async () => {
+      const merged = await Promise.race([
+        syncHanziPool(),
+        new Promise<HanziPoolState>((resolve) =>
+          setTimeout(() => resolve(getHanziPoolLocal()), 2500),
+        ),
+      ]);
+      if (!alive) return;
+      setPool(merged);
+      startRound(merged);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [startRound]);
+
+  const current = batch.find((q) => q.uid === queue[0]);
+  const total = batch.length;
+  const masteredCount = React.useMemo(
+    () => allHanziQuestions.filter((q) => pool[q.uid]?.m).length,
+    [pool],
+  );
 
   function record(correct: boolean, extra?: Partial<Feedback>) {
     if (!current) return;
-    if (!attempted.has(current.id)) {
-      setAttempted((s) => new Set(s).add(current.id));
-      setFirstTry((m) => ({ ...m, [current.id]: correct }));
+    if (!attempted.has(current.uid)) {
+      setAttempted((s) => new Set(s).add(current.uid));
+      setFirstTry((m) => ({ ...m, [current.uid]: correct }));
     }
     setFb({ correct, ...extra });
     setPhase("feedback");
@@ -348,73 +407,85 @@ export function HanziPlayer({ set }: { set: HanziSet }) {
     record(correct, { bySelfJudge: true });
   }
 
+  function finishRound() {
+    // 更新題庫精熟狀態：這一輪一次就對＝精熟；答錯過＝未精熟（下一輪還會出）
+    const now = new Date().toISOString();
+    const nextPool: HanziPoolState = { ...pool };
+    for (const q of batch) {
+      const prev = nextPool[q.uid];
+      const wasWrong = !firstTry[q.uid];
+      nextPool[q.uid] = {
+        m: !wasWrong,
+        w: (prev?.w ?? 0) + (wasWrong ? 1 : 0),
+        s: now,
+      };
+    }
+    setPool(nextPool);
+    void saveHanziPool(nextPool);
+    if (!saved) {
+      setSaved(true);
+      void saveHanziAttempt({
+        setId: "hanzi-pool",
+        firstTryCorrect: batch.filter((q) => firstTry[q.uid]).length,
+        total,
+        wrongQuestionIds: batch
+          .filter((q) => !firstTry[q.uid])
+          .map((q) => q.uid),
+        selfJudged,
+        finishedAt: now,
+      });
+    }
+    setPhase("done");
+  }
+
   function next() {
     if (!current || !fb) return;
     const rest = queue.slice(1);
     let nextQueue: string[];
     if (fb.correct) {
-      const remaining = (need[current.id] ?? 1) - 1;
+      const remaining = (need[current.uid] ?? 1) - 1;
       if (remaining <= 0) {
-        setMastered((n) => n + 1);
+        setCleared((n) => n + 1);
         nextQueue = rest;
       } else {
-        setNeed((m) => ({ ...m, [current.id]: remaining }));
+        setNeed((m) => ({ ...m, [current.uid]: remaining }));
         nextQueue = [...rest];
-        nextQueue.splice(Math.min(REINSERT_GAP, rest.length), 0, current.id);
+        nextQueue.splice(Math.min(REINSERT_GAP, rest.length), 0, current.uid);
       }
     } else {
-      setNeed((m) => ({ ...m, [current.id]: NEED_AFTER_WRONG }));
+      setNeed((m) => ({ ...m, [current.uid]: NEED_AFTER_WRONG }));
       nextQueue = [...rest];
-      nextQueue.splice(Math.min(REINSERT_GAP, rest.length), 0, current.id);
+      nextQueue.splice(Math.min(REINSERT_GAP, rest.length), 0, current.uid);
     }
     setTyped("");
     setStrokeCount(0);
     setFb(null);
     padRef.current?.clear();
     if (nextQueue.length === 0) {
-      setPhase("done");
-      if (!saved) {
-        setSaved(true);
-        const firstTryCorrect = set.questions.filter(
-          (q) => firstTry[q.id],
-        ).length;
-        void saveHanziAttempt({
-          setId: set.id,
-          firstTryCorrect,
-          total,
-          wrongQuestionIds: set.questions
-            .filter((q) => !firstTry[q.id])
-            .map((q) => q.id),
-          selfJudged,
-          finishedAt: new Date().toISOString(),
-        });
-      }
+      finishRound();
     } else {
       setQueue(nextQueue);
       setPhase("answering");
     }
   }
 
-  function restart() {
-    setQueue(set.questions.map((q) => q.id));
-    setNeed({});
-    setAttempted(new Set());
-    setFirstTry({});
-    setMastered(0);
-    setPhase("answering");
-    setFb(null);
-    setTyped("");
-    setStrokeCount(0);
-    setSelfJudged(0);
-    setSaved(false);
-    padRef.current?.clear();
+  if (phase === "loading") {
+    return (
+      <div className="flex flex-1 flex-col py-10">
+        <BackLink />
+        <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground shadow-soft">
+          正在準備今天這一輪的字……
+        </div>
+      </div>
+    );
   }
 
   // ── 結算 ──
   if (phase === "done") {
-    const firstTryCorrect = set.questions.filter((q) => firstTry[q.id]).length;
+    const firstTryCorrect = batch.filter((q) => firstTry[q.uid]).length;
     const perfect = firstTryCorrect === total;
-    const wrongOnes = set.questions.filter((q) => !firstTry[q.id]);
+    const wrongOnes = batch.filter((q) => !firstTry[q.uid]);
+    const allMastered = masteredCount === poolTotal;
     return (
       <div className="flex flex-1 flex-col py-10">
         <BackLink />
@@ -426,24 +497,26 @@ export function HanziPlayer({ set }: { set: HanziSet }) {
             {perfect ? "🏆" : "💪"}
           </div>
           <h1 className="mt-4 text-2xl font-extrabold tracking-tight">
-            {perfect ? "全部一次就對，字音字形高手！" : "每個字都拿下了，過關！"}
+            {perfect ? "這一輪全部一次就對！" : "這一輪每個字都拿下了！"}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            {set.title}・共 {total} 個字
+            形音義大作戰・本輪 {total} 個字
           </p>
-          <div className="mx-auto mt-6 flex max-w-sm items-center justify-center gap-6">
+          <div className="mx-auto mt-6 flex max-w-md items-center justify-center gap-6">
             <div>
               <div className="text-3xl font-black" style={{ color }}>
                 {firstTryCorrect}/{total}
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
-                一次就對（實力分）
+                本輪一次就對
               </div>
             </div>
             <div>
-              <div className="text-3xl font-black text-correct">100%</div>
+              <div className="text-3xl font-black text-correct">
+                {masteredCount}/{poolTotal}
+              </div>
               <div className="mt-1 text-xs text-muted-foreground">
-                最後全數精熟
+                題庫累計精熟
               </div>
             </div>
           </div>
@@ -452,12 +525,12 @@ export function HanziPlayer({ set }: { set: HanziSet }) {
               有 {selfJudged} 題因為手寫辨識連不上，是自己對照答案判定的。
             </p>
           )}
-          {!perfect && (
+          {wrongOnes.length > 0 && (
             <div className="mx-auto mt-6 max-w-md rounded-xl bg-secondary/60 p-4 text-left text-sm leading-relaxed">
-              <p className="font-medium">回鍋練過的字，考點是：</p>
+              <p className="font-medium">這輪答錯過的字（下一輪還會再出）：</p>
               <ul className="mt-2 space-y-1 text-muted-foreground">
                 {wrongOnes.map((q) => (
-                  <li key={q.id} className="flex items-start gap-2">
+                  <li key={q.uid} className="flex items-start gap-2">
                     <Target className="mt-0.5 h-4 w-4 shrink-0" style={{ color }} />
                     <span>
                       <b style={{ color }}>{q.answer}</b>　{q.concept}
@@ -465,24 +538,26 @@ export function HanziPlayer({ set }: { set: HanziSet }) {
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-muted-foreground">
-                這些字剛剛已經連續答對兩次了——過幾天再回來考一輪，
-                「一次就對」的分數會告訴你是不是真的記住了。
-              </p>
             </div>
+          )}
+          {allMastered && (
+            <p className="mx-auto mt-6 max-w-md rounded-xl bg-correct/10 p-4 text-sm leading-relaxed text-correct">
+              整個題庫都精熟了！接下來每一輪會自動輪流複習「最久沒練」的字，
+              隔幾天回來考一輪，看看還記不記得。
+            </p>
           )}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <button
-              onClick={restart}
-              className="inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary"
+              onClick={() => startRound(pool)}
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
+              style={{ background: subject?.color.grad }}
             >
               <RotateCcw className="h-4 w-4" />
-              再挑戰一次
+              再練一輪（10 個字）
             </button>
             <Link
               href="/subject/chinese"
-              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
-              style={{ background: subject?.color.grad }}
+              className="inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary"
             >
               回國文基地
               <ArrowRight className="h-4 w-4" />
@@ -495,9 +570,9 @@ export function HanziPlayer({ set }: { set: HanziSet }) {
 
   if (!current) return null;
 
-  const isFirstVisit = !attempted.has(current.id);
-  const needMore = need[current.id];
-  const progress = total ? mastered / total : 0;
+  const isFirstVisit = !attempted.has(current.uid);
+  const needMore = need[current.uid];
+  const progress = total ? cleared / total : 0;
   const canSubmit =
     current.kind === "zhuyin" ? typed.trim().length > 0 : strokeCount > 0;
 
@@ -516,15 +591,18 @@ export function HanziPlayer({ set }: { set: HanziSet }) {
           <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs text-muted-foreground">
             {current.kind === "zhuyin" ? "看字寫注音" : "看注音寫國字"}
           </span>
+          <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs text-muted-foreground">
+            題庫精熟 {masteredCount}/{poolTotal}
+          </span>
         </div>
         <h1 className="mt-2 text-2xl font-extrabold tracking-tight">
-          {set.title}
+          形音義大作戰
         </h1>
         <div className="mt-4">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>
-              已精熟 {mastered}/{total} 個字
-              {queue.length > total - mastered && "（有字回鍋中）"}
+              本輪已過關 {cleared}/{total} 個字
+              {queue.length > total - cleared && "（有字回鍋中）"}
             </span>
             <span>{Math.round(progress * 100)}%</span>
           </div>
@@ -640,9 +718,9 @@ export function HanziPlayer({ set }: { set: HanziSet }) {
                 {fb.correct ? (
                   <>
                     <CheckCircle2 className="h-5 w-5" /> 答對了！
-                    {!isFirstVisit && (need[current.id] ?? 1) > 1 && (
+                    {!isFirstVisit && (need[current.uid] ?? 1) > 1 && (
                       <span className="text-xs font-medium">
-                        （回鍋字，再對 {(need[current.id] ?? 1) - 1} 次就過關）
+                        （回鍋字，再對 {(need[current.uid] ?? 1) - 1} 次就過關）
                       </span>
                     )}
                   </>
@@ -690,7 +768,7 @@ export function HanziPlayer({ set }: { set: HanziSet }) {
               className="mt-4 inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
               style={{ background: subject?.color.grad }}
             >
-              {queue.length === 1 && fb.correct && (need[current.id] ?? 1) <= 1 ? (
+              {queue.length === 1 && fb.correct && (need[current.uid] ?? 1) <= 1 ? (
                 <>
                   看成績 <Trophy className="h-4 w-4" />
                 </>

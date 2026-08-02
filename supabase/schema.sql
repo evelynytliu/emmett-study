@@ -148,6 +148,15 @@ create table if not exists public.mathconcept_hanzi_attempts (
 create index if not exists mathconcept_hanzi_attempts_set_idx
   on public.mathconcept_hanzi_attempts (set_id, created_at desc);
 
+-- 題庫精熟狀態（單列 jsonb：uid → {m 精熟, w 錯誤次數, s 最後練到}）。
+-- 跨裝置同步用：開練前拉下來合併、每輪結束 upsert 回去。
+create table if not exists public.mathconcept_hanzi_pool (
+  id uuid primary key default gen_random_uuid(),
+  pool_key text not null unique default 'main',
+  state jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
 -- 完整先修課表：每個步驟完成紀錄（學單元 / 複習檢核點 / 結業）
 create table if not exists public.mathconcept_course_progress (
   id uuid primary key default gen_random_uuid(),
@@ -170,6 +179,7 @@ alter table public.mathconcept_course_progress enable row level security;
 alter table public.mathconcept_wenyan_progress enable row level security;
 alter table public.mathconcept_quiz_attempts enable row level security;
 alter table public.mathconcept_hanzi_attempts enable row level security;
+alter table public.mathconcept_hanzi_pool enable row level security;
 
 drop policy if exists "mathconcept allow all progress" on public.mathconcept_progress;
 create policy "mathconcept allow all progress" on public.mathconcept_progress
@@ -217,4 +227,8 @@ create policy "mathconcept allow all quiz attempts" on public.mathconcept_quiz_a
 
 drop policy if exists "mathconcept allow all hanzi attempts" on public.mathconcept_hanzi_attempts;
 create policy "mathconcept allow all hanzi attempts" on public.mathconcept_hanzi_attempts
+  for all using (true) with check (true);
+
+drop policy if exists "mathconcept allow all hanzi pool" on public.mathconcept_hanzi_pool;
+create policy "mathconcept allow all hanzi pool" on public.mathconcept_hanzi_pool
   for all using (true) with check (true);

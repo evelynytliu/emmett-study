@@ -10,7 +10,7 @@ import { subjects, type Subject, type SubjectId } from "@/content/subjects";
 import { units } from "@/content";
 import { wenyanWords } from "@/content/wenyan";
 import { quizzes } from "@/content/quizzes";
-import { hanziSets } from "@/content/hanzi";
+import { allHanziQuestions } from "@/content/hanzi";
 import { homeworks } from "@/content/homework";
 import { historyScenes } from "@/content/history";
 
@@ -20,6 +20,7 @@ export type ContentKind =
   | "wenyan"
   | "quiz"
   | "hanzi"
+  | "hanzi-codex"
   | "homework-draft"
   | "vocab"
   | "history";
@@ -84,20 +85,25 @@ export function contentForSubject(subjectId: SubjectId): ContentItem[] {
   }
 
   if (subjectId === "chinese") {
-    for (const h of hanziSets) {
-      items.push({
-        key: `hanzi-${h.id}`,
-        kind: "hanzi",
-        href: `/hanzi/${h.id}`,
-        title: `形音義・${h.title}`,
-        subtitle: h.subtitle,
-        badge:
-          h.kind === "zhuyin"
-            ? `注音精熟・${h.questions.length} 字`
-            : `手寫國字・${h.questions.length} 字`,
-        topicId: "chinese-pre-2",
-      });
-    }
+    items.push({
+      key: "hanzi-codex",
+      kind: "hanzi-codex",
+      href: "/hanzi-codex",
+      title: "形音義鍛字所（CODEX 版）",
+      subtitle: "12 組、124 個考點；錯題會回鍋，連續答對兩次才真正過關。",
+      badge: "CODEX 精熟循環・可手寫",
+      topicId: "chinese-pre-2",
+    });
+    items.push({
+      key: "hanzi-pool",
+      kind: "hanzi",
+      href: "/hanzi",
+      title: "形音義大作戰",
+      subtitle:
+        "注音＋手寫國字混合題庫，每輪抽 10 個字；還沒精熟和答錯過的字優先出，全部精熟後輪流複習最久沒練的字。",
+      badge: `精熟題庫・${allHanziQuestions.length} 字`,
+      topicId: "chinese-pre-2",
+    });
     for (const w of wenyanWords) {
       items.push({
         key: `wenyan-${w.id}`,

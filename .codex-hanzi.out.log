@@ -1,0 +1,17 @@
+
+> guozhong-math-concepts@0.1.0 dev
+> next dev -p 3002
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3002
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 7.1s
+ ○ Compiling /hanzi-codex ...
+ ✓ Compiled /hanzi-codex in 22.5s (599 modules)
+ GET /hanzi-codex 200 in 12449ms
+ GET /hanzi-codex 200 in 25980ms
+ ✓ Compiled in 3.6s (585 modules)
+ GET /hanzi-codex 200 in 166ms
+[?25h

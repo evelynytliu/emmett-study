@@ -8,9 +8,11 @@ import Link from "next/link";
 import type { Subject } from "@/content/subjects";
 import type { ContentItem } from "@/lib/subject-content";
 import { getQuizRecord } from "@/lib/quiz-storage";
-import { getHanziRecord } from "@/lib/hanzi-storage";
+import { getHanziPoolLocal } from "@/lib/hanzi-storage";
+import { allHanziQuestions } from "@/content/hanzi";
 
 // 科目頁只需要這三個欄位（題組與形音義的紀錄共用同一形狀）
+// 形音義題庫卡：bestFirstTry 放「已精熟字數」，顯示文字另外分支
 interface ProgressBadge {
   attempts: number;
   bestFirstTry: number;
@@ -27,6 +29,7 @@ import {
   Map as MapIcon,
   PenLine,
   ScrollText,
+  Sparkles,
   SpellCheck2,
   Trophy,
 } from "lucide-react";
@@ -36,6 +39,7 @@ const KIND_ICON: Record<ContentItem["kind"], React.ComponentType<{ className?: s
   wenyan: ScrollText,
   quiz: Trophy,
   hanzi: Brush,
+  "hanzi-codex": Sparkles,
   "homework-draft": PenLine,
   vocab: SpellCheck2,
   history: Landmark,
@@ -60,8 +64,14 @@ export function SubjectView({
         const r = getQuizRecord(id);
         if (r) map[id] = r;
       } else if (it.kind === "hanzi") {
-        const r = getHanziRecord(id);
-        if (r) map[id] = r;
+        const pool = getHanziPoolLocal();
+        const mastered = allHanziQuestions.filter((q) => pool[q.uid]?.m).length;
+        if (mastered > 0)
+          map[id] = {
+            attempts: 0,
+            bestFirstTry: mastered,
+            total: allHanziQuestions.length,
+          };
       }
     }
     setQuizRecords(map);
@@ -169,8 +179,16 @@ export function SubjectView({
                         {rec && (
                           <span className="flex items-center gap-1 rounded-full bg-correct/15 px-2 py-0.5 text-xs font-medium text-correct">
                             <CheckCircle2 className="h-3.5 w-3.5" />
-                            做過 {rec.attempts} 次・最佳一次就對 {rec.bestFirstTry}/
-                            {rec.total}
+                            {it.kind === "hanzi" ? (
+                              <>
+                                已精熟 {rec.bestFirstTry}/{rec.total} 字
+                              </>
+                            ) : (
+                              <>
+                                做過 {rec.attempts} 次・最佳一次就對{" "}
+                                {rec.bestFirstTry}/{rec.total}
+                              </>
+                            )}
                           </span>
                         )}
                       </div>
