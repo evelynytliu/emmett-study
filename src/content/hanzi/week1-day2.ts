@@ -82,9 +82,10 @@ export const hanziW1D2: HanziSet = {
       id: "q7",
       kind: "zhuyin",
       sentence: "你一直糾纏他，究竟有【什】麼企圖？",
-      answer: "ㄕㄜˊ",
-      explanation: "「什麼」的「什」，字典標準音讀ㄕㄜˊ，不讀ㄕㄣˊ。",
-      concept: "易讀錯：什（ㄕㄜˊ）",
+      answer: "ㄕㄣˊ",
+      explanation:
+        "什麼＝疑問詞。「什」在「什麼」裡讀ㄕㄣˊ；在「什錦」「家什」等詞裡才讀ㄕˊ。",
+      concept: "破音字：什（ㄕㄣˊ＝什麼）",
     },
     {
       id: "q8",
