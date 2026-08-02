@@ -21,10 +21,10 @@ export const hanziW2D2: HanziSet = {
       id: "q2",
       kind: "zhuyin",
       sentence: "小丑做出許多【滑】稽逗趣的動作，觀眾笑聲不斷。",
-      answer: "ㄍㄨˇ",
+      answer: "ㄏㄨㄚˊ",
       explanation:
-        "滑稽＝言語動作詼諧有趣。「滑」在「滑稽」一詞讀ㄍㄨˇ，不讀ㄏㄨㄚˊ。",
-      concept: "破音字：滑（ㄍㄨˇ＝滑稽）",
+        "滑稽＝言語動作詼諧有趣。依現行審訂音，「滑稽」的滑讀ㄏㄨㄚˊ，不讀舊音ㄍㄨˇ。",
+      concept: "易讀錯：滑稽（ㄏㄨㄚˊ）",
     },
     {
       id: "q3",

@@ -80,19 +80,20 @@ export const hanziW2D1: HanziSet = {
     {
       id: "q9",
       kind: "zhuyin",
-      sentence: "這位形象清新的立委竟傳出【緋】聞，令人意外。",
-      answer: "ㄈㄟ",
+      sentence: "判決結果一公布，旁聽席上一片【譁】然。",
+      answer: "ㄏㄨㄚˊ",
       explanation:
-        "緋聞＝男女間的桃色新聞。緋（紅色）讀ㄈㄟ（一聲），不讀ㄈㄟˇ。",
-      concept: "易讀錯：緋（ㄈㄟ）",
+        "譁然＝人多而聲音嘈雜的樣子。譁讀ㄏㄨㄚˊ（二聲），不讀ㄏㄨㄚˇ。",
+      concept: "易讀錯：譁（ㄏㄨㄚˊ）",
     },
     {
       id: "q10",
       kind: "zhuyin",
-      sentence: "橫行鄉里的【痞】子被移送法辦，居民拍手叫好。",
-      answer: "ㄆㄧˇ",
-      explanation: "痞子＝流氓、無賴。痞讀ㄆㄧˇ（三聲）。",
-      concept: "易讀錯：痞（ㄆㄧˇ）",
+      sentence: "這個橫行鄉里的【癟】三終於被移送法辦，居民拍手叫好。",
+      answer: "ㄅㄧㄝˇ",
+      explanation:
+        "癟三＝稱遊手好閒的流氓、無賴。癟讀ㄅㄧㄝˇ（三聲），不讀ㄅㄧㄝ。",
+      concept: "易讀錯：癟（ㄅㄧㄝˇ）",
     },
   ],
 };

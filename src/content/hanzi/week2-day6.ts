@@ -83,11 +83,11 @@ export const hanziW2D6: HanziSet = {
     {
       id: "q9",
       kind: "char",
-      sentence: "太魯閣國家公園是【ㄆㄛ】負盛名的觀光勝地。",
-      answer: "頗",
+      sentence: "太魯閣國家公園是頗【ㄈㄨˋ】盛名的觀光勝地。",
+      answer: "負",
       explanation:
-        "頗負盛名＝相當有名（頗＝很、相當）。「頗」是頁字旁。",
-      concept: "字形：頗負盛名",
+        "頗負盛名＝一向擁有很大的名聲（負＝享有）。用「負」，不寫成「頗富盛名」。",
+      concept: "同音易混：負／富",
     },
     {
       id: "q10",

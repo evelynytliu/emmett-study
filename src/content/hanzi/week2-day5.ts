@@ -64,10 +64,10 @@ export const hanziW2D5: HanziSet = {
     {
       id: "q7",
       kind: "zhuyin",
-      sentence: "看到同學頭上的髮【簪】，妹妹也吵著要買一支。",
-      answer: "ㄗㄢ",
-      explanation: "髮簪＝束住頭髮的長針狀飾物。簪讀ㄗㄢ（一聲），不讀ㄗㄢˋ。",
-      concept: "易讀錯：簪（ㄗㄢ）",
+      sentence: "看到同學頭上的髮【箍】，妹妹也吵著要買一個。",
+      answer: "ㄍㄨ",
+      explanation: "髮箍＝束緊頭髮的環狀飾物。箍讀ㄍㄨ（一聲）。",
+      concept: "易讀錯：箍（ㄍㄨ）",
     },
     {
       id: "q8",

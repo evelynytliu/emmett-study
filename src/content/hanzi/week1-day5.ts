@@ -81,9 +81,10 @@ export const hanziW1D5: HanziSet = {
       id: "q9",
       kind: "zhuyin",
       sentence: "大胃王十分鐘內吃下二十個漢堡，令觀眾【咋】舌不已。",
-      answer: "ㄗㄜˋ",
-      explanation: "咋舌＝驚訝得說不出話。咋讀ㄗㄜˋ，不讀ㄗㄚˋ。",
-      concept: "易讀錯：咋（ㄗㄜˋ）",
+      answer: "ㄗㄜˊ",
+      explanation:
+        "咋舌＝因吃驚、害怕而說不出話。咋讀ㄗㄜˊ（二聲），不讀ㄗㄚˋ。",
+      concept: "易讀錯：咋（ㄗㄜˊ）",
     },
     {
       id: "q10",
