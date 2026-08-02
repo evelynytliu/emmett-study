@@ -20,7 +20,6 @@ export type ContentKind =
   | "wenyan"
   | "quiz"
   | "hanzi"
-  | "hanzi-codex"
   | "homework-draft"
   | "vocab"
   | "history";
@@ -85,15 +84,6 @@ export function contentForSubject(subjectId: SubjectId): ContentItem[] {
   }
 
   if (subjectId === "chinese") {
-    items.push({
-      key: "hanzi-codex",
-      kind: "hanzi-codex",
-      href: "/hanzi-codex",
-      title: "形音義鍛字所（CODEX 版）",
-      subtitle: "12 組、124 個考點；錯題會回鍋，連續答對兩次才真正過關。",
-      badge: "CODEX 精熟循環・可手寫",
-      topicId: "chinese-pre-2",
-    });
     items.push({
       key: "hanzi-pool",
       kind: "hanzi",

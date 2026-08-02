@@ -50,14 +50,15 @@ function normalizeZhuyin(s: string): string {
   return t;
 }
 
+// 按鍵排列照「標準注音鍵盤」（電腦/iPad 打字同一套位置），孩子用平常的位置感就能點。
+// 調號（ˇˋˊ˙）也放在鍵盤上的原位，另用主題色標示。
 const ZHUYIN_KEYS = [
-  "ㄅㄆㄇㄈㄉㄊㄋㄌ",
-  "ㄍㄎㄏㄐㄑㄒ",
-  "ㄓㄔㄕㄖㄗㄘㄙ",
-  "ㄧㄨㄩㄚㄛㄜㄝ",
-  "ㄞㄟㄠㄡㄢㄣㄤㄥㄦ",
+  "ㄅㄉˇˋㄓˊ˙ㄚㄞㄢㄦ",
+  "ㄆㄊㄍㄐㄔㄗㄧㄛㄟㄣ",
+  "ㄇㄋㄎㄑㄕㄘㄨㄜㄠㄤ",
+  "ㄈㄌㄏㄒㄖㄙㄩㄝㄡㄥ",
 ];
-const TONE_KEYS = ["ˊ", "ˇ", "ˋ", "˙"];
+const TONE_SET = new Set(["ˊ", "ˇ", "ˋ", "˙"]);
 
 function ZhuyinPad({
   value,
@@ -70,45 +71,42 @@ function ZhuyinPad({
   disabled: boolean;
   color: string;
 }) {
-  const key = (k: string) => (
-    <button
-      key={k}
-      type="button"
-      disabled={disabled}
-      onClick={() => onChange(value + k)}
-      className="h-11 min-w-[2.4rem] flex-1 rounded-lg border bg-background text-lg font-medium transition-colors hover:bg-secondary active:scale-95 disabled:opacity-40"
-    >
-      {k}
-    </button>
-  );
+  const key = (k: string) => {
+    const isTone = TONE_SET.has(k);
+    return (
+      <button
+        key={k}
+        type="button"
+        disabled={disabled}
+        onClick={() => onChange(value + k)}
+        className={
+          isTone
+            ? "h-11 min-w-0 flex-1 rounded-lg border text-xl font-bold transition-colors hover:opacity-80 active:scale-95 disabled:opacity-40"
+            : "h-11 min-w-0 flex-1 rounded-lg border bg-background text-lg font-medium transition-colors hover:bg-secondary active:scale-95 disabled:opacity-40"
+        }
+        style={isTone ? { background: `${color}18`, color } : undefined}
+      >
+        {k}
+      </button>
+    );
+  };
   return (
     <div className="mt-3 select-none space-y-1.5" aria-label="注音鍵盤">
       {ZHUYIN_KEYS.map((row) => (
-        <div key={row} className="flex gap-1.5">
+        <div key={row} className="flex gap-1">
           {row.split("").map(key)}
         </div>
       ))}
-      <div className="flex gap-1.5">
-        {TONE_KEYS.map((t) => (
-          <button
-            key={t}
-            type="button"
-            disabled={disabled}
-            onClick={() => onChange(value + t)}
-            className="h-11 flex-1 rounded-lg border text-xl font-bold transition-colors hover:opacity-80 active:scale-95 disabled:opacity-40"
-            style={{ background: `${color}18`, color }}
-          >
-            {t === "˙" ? "˙輕" : t}
-          </button>
-        ))}
+      <div className="flex justify-end gap-1">
         <button
           type="button"
           disabled={disabled || value.length === 0}
           onClick={() => onChange(value.slice(0, -1))}
-          className="flex h-11 flex-1 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-secondary active:scale-95 disabled:opacity-40"
+          className="flex h-11 w-1/3 items-center justify-center gap-1.5 rounded-lg border bg-background text-sm transition-colors hover:bg-secondary active:scale-95 disabled:opacity-40"
           aria-label="退格"
         >
           <Delete className="h-5 w-5" />
+          退一格
         </button>
       </div>
     </div>

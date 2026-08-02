@@ -24,6 +24,7 @@ export interface HanziRecord {
   wrongQuestionIds: string[];
 }
 
+// 注意：孩子已經開始累積精熟紀錄，這兩把 key 絕對不能再改（改了進度就歸零）
 const RECORDS_KEY = "gz-hanzi:records";
 const POOL_KEY = "gz-hanzi:pool";
 const TABLE_ATTEMPTS = "mathconcept_hanzi_attempts";

@@ -159,40 +159,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 國文 CODEX 版形音義精熟循環 ── */}
-      <section className="mb-9">
-        <Link
-          href="/hanzi-codex"
-          className="group relative block overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-br from-slate-950 via-indigo-950 to-violet-900 p-5 text-white shadow-md transition-all hover:-translate-y-1 hover:shadow-xl"
-        >
-          <span
-            aria-hidden
-            className="absolute -right-3 -top-6 text-7xl opacity-20 transition-transform group-hover:scale-110"
-          >
-            ✍️
-          </span>
-          <div className="flex items-center gap-2">
-            <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-black text-amber-950">
-              CODEX 版
-            </span>
-            <span className="text-xs font-semibold text-indigo-100">
-              國文・形音義
-            </span>
-          </div>
-          <h3 className="mt-2 text-xl font-black tracking-tight">
-            形音義鍛字所
-          </h3>
-          <p className="mt-1 max-w-lg text-sm leading-relaxed text-indigo-100/90">
-            12 組、124 個考點；錯題隔幾題再回鍋，連續答對兩次才過關。
-            國字題可以直接在田字格手寫辨識。
-          </p>
-          <div className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold">
-            開始鍛字
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </div>
-        </Link>
-      </section>
-
       {/* ── 歷史 3D 場景館（獨立入口） ── */}
       <section className="mb-9">
         <Link

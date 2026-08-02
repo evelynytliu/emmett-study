@@ -29,7 +29,6 @@ import {
   Map as MapIcon,
   PenLine,
   ScrollText,
-  Sparkles,
   SpellCheck2,
   Trophy,
 } from "lucide-react";
@@ -39,7 +38,6 @@ const KIND_ICON: Record<ContentItem["kind"], React.ComponentType<{ className?: s
   wenyan: ScrollText,
   quiz: Trophy,
   hanzi: Brush,
-  "hanzi-codex": Sparkles,
   "homework-draft": PenLine,
   vocab: SpellCheck2,
   history: Landmark,

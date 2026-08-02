@@ -275,7 +275,7 @@
   每輪抽 10 個字（未精熟/答錯過優先 → 沒見過的新字 → 最久沒練的複習）。
   精熟狀態掛在 `uid = setId:題目id` 上（**別改 id**），存 localStorage
   ＋Supabase `mathconcept_hanzi_pool`（單列 jsonb，開練前合併、每輪結束 upsert）。
-  另有平行的 `/hanzi-codex`（CODEX 版鍛字所）共用同一份題目資料，兩者互不影響。
+  （曾有平行的 `/hanzi-codex` CODEX 版，2026-08-02 已依使用者要求移除。）
 - 兩種題型：`zhuyin`（看字寫注音，站內注音鍵盤作答）、`char`（看注音寫國字，
   手寫板＋Google 手寫辨識 `src/lib/handwriting.ts`；辨識連不上自動退回「對照答案自評」，
   跟 AI fallback 同精神）。
