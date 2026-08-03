@@ -18,6 +18,7 @@ import {
 } from "@/lib/wenyan-storage";
 import { WenyanParentSummary } from "@/components/wenyan/wenyan-parent-summary";
 import { QuizParentSummary } from "@/components/quiz-parent-summary";
+import { HanziParentSummary } from "@/components/hanzi-parent-summary";
 import {
   getAllPracticeDataCloud,
   syncPracticeLocalToSupabase,
@@ -44,6 +45,7 @@ import type { DrillQuestion } from "@/content/types";
 import { isSupabaseEnabled } from "@/lib/supabase";
 import {
   ChevronLeft,
+  ChevronDown,
   CheckCircle2,
   AlertCircle,
   CloudUpload,
@@ -51,7 +53,9 @@ import {
   Sparkles,
   GraduationCap,
   ArrowRight,
+  Calculator,
   Wand2,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -303,7 +307,7 @@ export default function ParentPage() {
       </div>
       <h1 className="text-2xl font-bold tracking-tight">家長檢視</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        孩子的五科學習紀錄：線上題目答題狀況、數學單元的 AI 吸收度診斷、文言文進度。
+        依區塊整理孩子的學習紀錄：數學五段式單元（點單元名展開細節）、國文形音義與文言文、各科線上題目。
       </p>
 
       {/* 完整先修課表進度總覽 */}
@@ -337,8 +341,18 @@ export default function ParentPage() {
         </div>
       )}
 
+      {/* 工具（同步 / AI 分析）——平常收合，減少版面干擾 */}
+      <details className="group mt-4 rounded-xl border bg-card">
+        <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3.5 [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <Wrench className="h-4 w-4 text-muted-foreground" />
+            工具：跨裝置同步・AI 補分析
+          </span>
+          <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="space-y-4 border-t px-5 py-4">
       {/* 跨裝置同步 */}
-      <div className="mt-4 rounded-xl border bg-card px-5 py-4">
+      <div>
         <p className="text-sm font-medium">跨裝置同步</p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           在孩子使用的裝置上，點「上傳到雲端」把本機資料推上去；之後在任何裝置開啟這頁都看得到。
@@ -392,7 +406,7 @@ export default function ParentPage() {
 
       {/* 用 AI 分析目前已存在、但還沒判讀過的答案 */}
       {loaded && anyData && (
-        <div className="mt-4 rounded-xl border bg-card px-5 py-4">
+        <div className="border-t pt-4">
           <p className="text-sm font-medium">用 AI 分析目前的答案</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             把孩子已經寫過、但還沒經過 AI 判讀的解釋與單元表現送給 AI，分析結果會直接顯示在下面各單元。
@@ -437,41 +451,64 @@ export default function ParentPage() {
           </div>
         </div>
       )}
+        </div>
+      </details>
 
       {!loaded ? (
         <div className="mt-10 text-center text-muted-foreground">讀取中…</div>
-      ) : !anyData ? (
-        <div className="mt-6 rounded-xl border border-dashed bg-card/60 p-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            數學單元（五段式）還沒有紀錄——下面若有線上題目的答題狀況，代表孩子已經開始練了。
-          </p>
-        </div>
       ) : (
-        <div className="mt-6 space-y-6">
-          {units.map((unit, i) => {
-            const { progress, explanation } = rows[i] ?? {};
-            const pd = practiceData[unit.id];
-            const diag = diagnoses[unit.id] ?? null;
-            if (!progress && !explanation && !pd && !diag) return null;
-            return (
-              <UnitCard
-                key={unit.id}
-                unit={unit}
-                progress={progress ?? null}
-                explanation={explanation ?? null}
-                practice={pd ?? null}
-                diagnosis={diag}
-              />
-            );
-          })}
-        </div>
+        <>
+          {/* ── 數學・五段式單元 ── */}
+          <section className="mt-8">
+            <div className="mb-3 flex items-center gap-2">
+              <Calculator className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-bold tracking-tight">
+                數學・五段式單元
+              </h2>
+            </div>
+            {!anyData ? (
+              <div className="rounded-xl border border-dashed bg-card/60 p-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  數學單元（五段式）還沒有紀錄——下面若有其他區塊，代表孩子已經從別的內容開始練了。
+                </p>
+              </div>
+            ) : (
+              <>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  點單元名可以展開：孩子寫的解釋、變形題結果、練習區紀錄、AI 吸收度診斷。
+                </p>
+                <div className="space-y-3">
+                  {units.map((unit, i) => {
+                    const { progress, explanation } = rows[i] ?? {};
+                    const pd = practiceData[unit.id];
+                    const diag = diagnoses[unit.id] ?? null;
+                    if (!progress && !explanation && !pd && !diag) return null;
+                    return (
+                      <UnitCard
+                        key={unit.id}
+                        unit={unit}
+                        progress={progress ?? null}
+                        explanation={explanation ?? null}
+                        practice={pd ?? null}
+                        diagnosis={diag}
+                      />
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </section>
+
+          {/* ── 國文・形音義大作戰 ── */}
+          <HanziParentSummary />
+
+          {/* ── 國文・文言文（古今異義） ── */}
+          <WenyanParentSummary />
+
+          {/* ── 各科線上題目答題狀況（跨五科） ── */}
+          <QuizParentSummary />
+        </>
       )}
-
-      {/* 各科線上題目答題狀況（跨五科） */}
-      {loaded && <QuizParentSummary />}
-
-      {/* 國文・文言文（古今異義）進度 */}
-      {loaded && <WenyanParentSummary />}
     </div>
   );
 }
@@ -507,29 +544,47 @@ function UnitCard({
   );
   const hasPractice = practiceSummary.practiced;
 
+  const absorption = diagnosis
+    ? (ABSORPTION_STYLE[diagnosis.diagnosis.absorption_level] ??
+      ABSORPTION_STYLE["部分理解"])
+    : null;
+
   return (
-    <div className="rounded-xl border bg-card">
-      {/* 單元標題 + 完成狀態 */}
-      <div className="flex items-center justify-between border-b px-5 py-4">
-        <div>
+    <details className="group rounded-xl border bg-card">
+      {/* 摘要列：單元名 + 狀態徽章（點了才展開細節） */}
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
+        <div className="min-w-0">
           <p className="text-xs font-medium text-muted-foreground">
             單元 {unit.order}
           </p>
-          <h2 className="text-lg font-semibold">{unit.title}</h2>
+          <h2 className="truncate text-lg font-semibold">{unit.title}</h2>
         </div>
-        {completed ? (
-          <span className="flex items-center gap-1.5 rounded-full bg-correct/15 px-3 py-1 text-sm font-medium text-correct">
-            <CheckCircle2 className="h-4 w-4" />
-            完成
-          </span>
-        ) : reached > 0 ? (
-          <span className="rounded-full bg-secondary px-3 py-1 text-sm text-muted-foreground">
-            進行到第 {reached} 段・{SECTION_NAMES[reached - 1]}
-          </span>
-        ) : null}
-      </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {absorption && diagnosis && (
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-1 text-xs font-semibold",
+                absorption.cls,
+              )}
+            >
+              {absorption.emoji} {diagnosis.diagnosis.absorption_level}
+            </span>
+          )}
+          {completed ? (
+            <span className="flex items-center gap-1.5 rounded-full bg-correct/15 px-3 py-1 text-sm font-medium text-correct">
+              <CheckCircle2 className="h-4 w-4" />
+              完成
+            </span>
+          ) : reached > 0 ? (
+            <span className="rounded-full bg-secondary px-3 py-1 text-sm text-muted-foreground">
+              第 {reached} 段・{SECTION_NAMES[reached - 1]}
+            </span>
+          ) : null}
+          <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+        </div>
+      </summary>
 
-      <div className="space-y-5 p-5">
+      <div className="space-y-5 border-t p-5">
         {/* 進度條 */}
         {progress && (
           <ProgressBar reached={reached} completed={completed} />
@@ -560,7 +615,7 @@ function UnitCard({
           />
         )}
       </div>
-    </div>
+    </details>
   );
 }
 

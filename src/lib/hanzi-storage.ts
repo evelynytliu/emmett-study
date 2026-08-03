@@ -124,6 +124,61 @@ export function getHanziRecord(setId: string): HanziRecord | null {
   return getAllHanziRecords()[setId] ?? null;
 }
 
+// 家長頁用：拉雲端全部輪次歷史（沒開 Supabase 就用本機彙總折衷呈現）
+export interface HanziAttemptRow {
+  setId: string;
+  firstTryCorrect: number;
+  total: number;
+  wrongQuestionIds: string[];
+  selfJudged: number;
+  createdAt: string;
+}
+
+export async function getHanziHistory(): Promise<HanziAttemptRow[]> {
+  if (isSupabaseEnabled) {
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        const { data, error } = await sb
+          .from(TABLE_ATTEMPTS)
+          .select(
+            "set_id, first_try_correct, total, wrong_question_ids, self_judged, created_at",
+          )
+          .order("created_at", { ascending: false });
+        if (!error && data) {
+          return (
+            data as {
+              set_id: string;
+              first_try_correct: number;
+              total: number;
+              wrong_question_ids: string[] | null;
+              self_judged: number | null;
+              created_at: string;
+            }[]
+          ).map((r) => ({
+            setId: r.set_id,
+            firstTryCorrect: r.first_try_correct,
+            total: r.total,
+            wrongQuestionIds: r.wrong_question_ids ?? [],
+            selfJudged: r.self_judged ?? 0,
+            createdAt: r.created_at,
+          }));
+        }
+      } catch {
+        /* 讀不到就退回本機 */
+      }
+    }
+  }
+  return Object.values(getAllHanziRecords()).map((r) => ({
+    setId: r.setId,
+    firstTryCorrect: r.lastFirstTry,
+    total: r.total,
+    wrongQuestionIds: r.wrongQuestionIds,
+    selfJudged: 0,
+    createdAt: r.lastFinishedAt,
+  }));
+}
+
 export async function saveHanziAttempt(a: HanziAttempt): Promise<void> {
   const all = getAllHanziRecords();
   const prev = all[a.setId];
