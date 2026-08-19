@@ -11,14 +11,18 @@
 
 import type { DraftHomework, DraftField } from "./types";
 
-// 六個成長階段
+// 六個成長階段（照作業本上的分法：幼兒期／孩童期／低年級／中年級／高年級／國中）
+//
+// ⚠️ key 是草稿的儲存欄位名，已經寫過的內容都掛在上面，改了他寫的東西就不見了。
+// 2026-08-19 修正階段名稱時刻意沿用 toddler/preschool/lower/upper 這四個 key，
+// 原本多出來的 baby（嬰兒時期）與 now 沒有對應階段、也沒有內容，直接移除。
 const STAGES: { key: string; name: string; age: string }[] = [
-  { key: "baby", name: "嬰兒時期", age: "0～1 歲，還是小寶寶" },
-  { key: "toddler", name: "幼兒時期", age: "1～3 歲，學走路、學說話" },
-  { key: "preschool", name: "上幼兒園", age: "3～6 歲，第一次離開家去上學" },
-  { key: "lower", name: "國小低年級", age: "一、二年級" },
-  { key: "upper", name: "國小中高年級", age: "三～六年級" },
-  { key: "now", name: "現在・要上國中了", age: "這個暑假的你" },
+  { key: "toddler", name: "幼兒期", age: "上幼兒園之前，還是小小孩" },
+  { key: "preschool", name: "孩童期", age: "幼兒園那幾年" },
+  { key: "lower", name: "低年級", age: "一、二年級" },
+  { key: "upper", name: "中年級", age: "三、四年級" },
+  { key: "senior", name: "高年級", age: "五、六年級" },
+  { key: "junior", name: "國中", age: "現在的你，正要上國一" },
 ];
 
 // 敘述用的回憶角度（不同的切入點，點一下幫他開頭）
