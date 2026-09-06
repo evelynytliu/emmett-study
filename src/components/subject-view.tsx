@@ -7,6 +7,7 @@ import * as React from "react";
 import Link from "next/link";
 import type { Subject } from "@/content/subjects";
 import type { ContentItem } from "@/lib/subject-content";
+import { cn } from "@/lib/utils";
 import { getQuizRecord } from "@/lib/quiz-storage";
 import { getHanziPoolLocal } from "@/lib/hanzi-storage";
 import { allHanziQuestions } from "@/content/hanzi";
@@ -77,14 +78,17 @@ export function SubjectView({
     setQuizRecords(map);
   }, [items]);
 
-  // 章節地圖：每個 topicId → 第一個對應內容的連結（點亮的章節可以直接點進去）
-  const topicHref = React.useMemo(() => {
-    const m: Record<string, string> = {};
+  // 章節地圖：每個 topicId 底下有哪些內容。點亮的章節點一下，在下方展開該章全部內容
+  // （一章常有好幾頁：複習頁＋題組，直接跳到第一個會讓人以為連錯）。
+  const topicItems = React.useMemo(() => {
+    const m: Record<string, ContentItem[]> = {};
     for (const it of items) {
-      if (it.topicId && !m[it.topicId]) m[it.topicId] = it.href;
+      if (!it.topicId) continue;
+      (m[it.topicId] ??= []).push(it);
     }
     return m;
   }, [items]);
+  const [topicSel, setTopicSel] = React.useState<string | null>(null);
 
   // 章節地圖分組：目前學期排最前，其餘照三年順序，「先修」放最後
   const semesters = React.useMemo(() => {
@@ -216,7 +220,7 @@ export function SubjectView({
           </h2>
         </div>
         <p className="mb-4 text-sm text-muted-foreground">
-          亮起來的章節＝這裡已經有互動內容可以練；灰色的＝之後會慢慢補上。
+          亮起來的章節＝這裡已經有內容可以練，點一下展開該章全部內容；灰色的＝之後會慢慢補上。
         </p>
         <div className="space-y-5">
           {semesters.map((sem) => {
@@ -234,18 +238,25 @@ export function SubjectView({
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {topics.map((t) => {
-                    const href = topicHref[t.id];
-                    if (href) {
-                      // 已涵蓋：做成可點的連結，直接跳到該章節的內容
+                    const list = topicItems[t.id];
+                    if (list && list.length > 0) {
+                      // 已涵蓋：點一下在下方展開該章內容（再點一下收起）
+                      const on = topicSel === t.id;
                       return (
-                        <Link
+                        <button
                           key={t.id}
-                          href={href}
-                          className="rounded-xl border border-transparent px-3 py-2 text-sm font-medium text-white shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
+                          type="button"
+                          onClick={() => setTopicSel(on ? null : t.id)}
+                          aria-expanded={on}
+                          className={cn(
+                            "rounded-xl border px-3 py-2 text-sm font-medium text-white shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md",
+                            on ? "border-foreground/40 ring-2 ring-foreground/15" : "border-transparent",
+                          )}
                           style={{ background: subject.color.main }}
                         >
                           ✓ {t.title}
-                        </Link>
+                          <span className="ml-1.5 rounded-full bg-white/25 px-1.5 text-[11px]">{list.length}</span>
+                        </button>
                       );
                     }
                     // 未涵蓋：純顯示（灰色、不可點）
@@ -260,6 +271,23 @@ export function SubjectView({
                     );
                   })}
                 </div>
+                {topicSel && topics.some((t) => t.id === topicSel) && (
+                  <div className="mt-3 rounded-2xl border p-3" style={{ background: subject.color.soft }}>
+                    <div className="mb-2 flex items-center justify-between text-sm">
+                      <span className="font-bold">
+                        {subject.topics.find((t) => t.id === topicSel)?.title}・{topicItems[topicSel].length} 個內容
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setTopicSel(null)}
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        收起
+                      </button>
+                    </div>
+                    <div className="space-y-2">{topicItems[topicSel].map(renderItem)}</div>
+                  </div>
+                )}
               </div>
             );
           })}
