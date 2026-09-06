@@ -54,6 +54,14 @@ export type PrepSection =
       intro?: string;
       figure: PrepFigure;
       hotspots: PrepHotspot[];
+    }
+  | {
+      // 排順序：流程／步驟類（科學方法七步、實驗步驟、消化順序…）。items 照正確順序寫，
+      // 引擎會打亂讓孩子依序點選；點錯不給答案、算一次失誤。
+      kind: "sequence";
+      title: string;
+      intro?: string;
+      items: { id: string; label: string; detail?: string }[];
     };
 
 // 可用的示意圖（新增圖時同步在 prep-figures.tsx 畫、在這裡登記）

@@ -4,7 +4,7 @@
 
 ## 考試排程（exams.ts）
 
-- 2026-09-10 science 小考「1-2 顯微鏡部位名稱」（翰林自然 1-2，課本 p.30–31） → /prep/prep-science-microscope, /quiz/quiz-science-microscope-1
+- 2026-09-07 science 小考「1-2 科學方法流程＋顯微鏡部位」（翰林自然 1-2，課本 p.23–25（科學方法）、p.30–31（顯微鏡）） → /prep/prep-science-method, /quiz/quiz-science-method-1, /prep/prep-science-microscope, /quiz/quiz-science-microscope-1
 
 ## 各科內容
 
@@ -51,10 +51,12 @@
 
 ### 自然（翰林版）
 
-考前複習頁 1・題組 2
+考前複習頁 2・題組 3
 
 - ✅ `science-7a-1` 7上 生命的世界（生物圈・科學探究方法）
+  - 複習頁 `prep-science-method`「科學方法流程：排步驟・變因・實驗組對照組」8 張卡・翰林自然 1-2，課本 p.23–25
   - 複習頁 `prep-science-microscope`「顯微鏡部位：認圖・翻卡・理解」27 張卡・翰林自然 1-2，課本 p.30–31
+  - 題組 `quiz-science-method-1`「科學方法流程・理解題驗收」12 題
   - 題組 `quiz-science-microscope-1`「顯微鏡部位・理解題驗收」13 題
 - ✅ `science-7a-2` 7上 細胞與生物體的組成層次
   - 題組 `quiz-science-cell-1`「細胞與生物體的組成・概念驗收」8 題

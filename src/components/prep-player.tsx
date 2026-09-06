@@ -22,6 +22,7 @@ import {
 } from "@/lib/prep-storage";
 import { cn } from "@/lib/utils";
 import { DiagramGame } from "./diagram-game";
+import { SequenceGame } from "./sequence-game";
 import {
   ArrowLeft,
   ArrowRight,
@@ -498,6 +499,14 @@ export function PrepPlayer({ prep }: { prep: PrepSet }) {
                     </tbody>
                   </table>
                 </div>
+              </section>
+            );
+          }
+          if (s.kind === "sequence") {
+            return (
+              <section key={si}>
+                <SectionHead title={s.title} intro={s.intro} color={color} soft={soft} chip={`${s.items.length} 步`} />
+                <SequenceGame items={s.items} color={color} soft={soft} storageKey={`gz-prep:sequence:${prep.id}:${si}`} />
               </section>
             );
           }

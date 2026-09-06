@@ -245,6 +245,14 @@ console.log("\n🗂️ 考前複習頁 prep/");
         if (s.rows.length === 0) err(`${st} 沒有列`);
       } else if (s.kind === "quiz") {
         if (!quizIds.has(s.quizId)) err(`${st} 找不到題組：${s.quizId}`);
+      } else if (s.kind === "sequence") {
+        if (s.items.length < 3) err(`${st} 排順序至少 3 步`);
+        const ids = new Set<string>();
+        for (const it of s.items) {
+          if (ids.has(it.id)) err(`${st} 步驟 id 重複：${it.id}`);
+          ids.add(it.id);
+          if (!it.label?.trim()) err(`${st} 步驟 ${it.id} 沒有名稱`);
+        }
       } else if (s.kind === "diagram") {
         if (!PREP_FIGURES.includes(s.figure)) err(`${st} 示意圖不存在：${s.figure}`);
         if (s.hotspots.length < 2) err(`${st} 熱點太少`);

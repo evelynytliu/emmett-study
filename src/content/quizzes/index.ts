@@ -10,11 +10,13 @@ import { quizEnglishBe1 } from "./english-be-1";
 import { quizScienceCell1 } from "./science-cell-1";
 import { quizSocialGeo1 } from "./social-geo-1";
 import { quizScienceMicroscope1 } from "./science-microscope-1";
+import { quizScienceMethod1 } from "./science-method-1";
 
 export const quizzes: QuizSet[] = [
   quizMathIntegers1,
   quizChineseWenyan1,
   quizEnglishBe1,
+  quizScienceMethod1,
   quizScienceMicroscope1,
   quizScienceCell1,
   quizSocialGeo1,
