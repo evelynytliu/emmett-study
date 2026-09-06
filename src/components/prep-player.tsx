@@ -21,6 +21,7 @@ import {
   type PrepPoolState,
 } from "@/lib/prep-storage";
 import { cn } from "@/lib/utils";
+import { DiagramGame } from "./diagram-game";
 import {
   ArrowLeft,
   ArrowRight,
@@ -496,6 +497,20 @@ export function PrepPlayer({ prep }: { prep: PrepSet }) {
                     </tbody>
                   </table>
                 </div>
+              </section>
+            );
+          }
+          if (s.kind === "diagram") {
+            return (
+              <section key={si}>
+                <SectionHead title={s.title} intro={s.intro} color={color} soft={soft} chip={`${s.hotspots.length} 個部位`} />
+                <DiagramGame
+                  figure={s.figure}
+                  hotspots={s.hotspots}
+                  color={color}
+                  soft={soft}
+                  storageKey={`gz-prep:diagram:${prep.id}:${si}`}
+                />
               </section>
             );
           }

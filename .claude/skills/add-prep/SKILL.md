@@ -17,6 +17,11 @@ description: 從課本照片或範圍描述做一頁「考前複習頁」（重�
    - `keypoints`：一句一重點，用【】挖空要背的關鍵字，一句最多 2–3 個【】。
    - `compare`：兩個常被混淆的東西，列對比；儲存格也能【挖空】。
    - `quiz`：若已有或順手出了題組，掛 `quizId` 當驗收。
+   - `diagram`：**點圖認部位**（部位／構造名稱最有效）。要一張示意圖（`figure`，在
+     `src/components/prep-figures.tsx` 用 SVG 畫、`PREP_FIGURES` 登記，viewBox 200×260）＋熱點
+     `{ id, name, x, y, side }`。三種玩法（看標籤／認名稱四選一／找位置）引擎自動提供。
+     畫新圖時只求「相對位置跟課本圖一致、零件看得出來」，畫完在預覽裡確認標籤不重疊。
+     範例：`science-microscope.ts` 的兩張顯微鏡。
 3. **寫檔** `src/content/prep/<subject>-<topic>.ts`，`id` 用 `prep-<subject>-<topic>`，
    `source` 填課本頁碼。卡片 `id` 短且**整頁唯一**（`c1…`、`s1…`）。
 4. **註冊** 進 `src/content/prep/index.ts` 的 `preps`。

@@ -45,7 +45,28 @@ export type PrepSection =
       kind: "quiz";
       quizId: string; // 對應 quizzes/ 的題組 id
       title?: string;
+    }
+  | {
+      // 點圖認部位：一張示意圖＋熱點。三種玩法：看標籤（讀）、認名稱（點熱點選名稱）、找位置（給名稱點熱點）。
+      // 示意圖由 src/components/prep-figures.tsx 用 SVG 畫，figure 要在 PREP_FIGURES 裡。
+      kind: "diagram";
+      title: string;
+      intro?: string;
+      figure: PrepFigure;
+      hotspots: PrepHotspot[];
     };
+
+// 可用的示意圖（新增圖時同步在 prep-figures.tsx 畫、在這裡登記）
+export const PREP_FIGURES = ["microscope-compound", "microscope-dissecting"] as const;
+export type PrepFigure = (typeof PREP_FIGURES)[number];
+
+export interface PrepHotspot {
+  id: string; // 組內唯一
+  name: string; // 部位名稱（答案）
+  x: number; // 圖上位置（viewBox 座標，與 prep-figures.tsx 的圖對齊）
+  y: number;
+  side?: "left" | "right"; // 標籤放哪一邊（預設右）
+}
 
 export interface PrepSet {
   id: string; // 全站唯一，例 "prep-science-microscope"。存過紀錄後別改。
