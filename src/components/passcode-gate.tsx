@@ -60,7 +60,7 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
       >
         <div className="flex items-center gap-2 text-primary">
           <Lock className="h-5 w-5" />
-          <span className="font-semibold">升國中・暑假學習基地</span>
+          <span className="font-semibold">Emmett 學習基地</span>
         </div>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
           這是私人學習網站，請輸入密碼進入。
