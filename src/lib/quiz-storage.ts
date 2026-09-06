@@ -9,6 +9,7 @@
 //   - 「每次完成的存檔」（append-only 上 mathconcept_quiz_attempts）：家長頁看歷史與弱概念
 
 import { getSupabase, isSupabaseEnabled } from "./supabase";
+import { touchStreak } from "./streak";
 
 export interface QuizAttempt {
   quizId: string;
@@ -78,6 +79,7 @@ export async function saveQuizAttempt(a: QuizAttempt): Promise<void> {
     wrongQuestionIds: a.wrongQuestionIds,
   };
   lsWrite(RECORDS_KEY, all);
+  touchStreak();
 
   if (isSupabaseEnabled) {
     const sb = getSupabase();

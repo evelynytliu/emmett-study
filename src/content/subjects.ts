@@ -9,11 +9,13 @@
 // topics 是依課本目錄整理的章節骨架，用來在科目頁顯示「涵蓋地圖」
 // （哪些章已有內容、哪些還沒），也讓之後出題時有穩定的 topicId 可掛。
 
+import type { Semester } from "./school";
+
 export type SubjectId = "chinese" | "math" | "english" | "science" | "social";
 
 export interface SubjectTopic {
   id: string; // 穩定 key，例 "math-7a-1"。題組用 topicId 掛上來，別改。
-  semester: "7上" | "7下" | "先修"; // 先修 = 不綁課本章節的基礎能力
+  semester: Semester | "先修"; // 7上…9下（school.ts 的 Semester）；先修 = 不綁課本章節的基礎能力
   title: string; // 章節或主題名稱
 }
 

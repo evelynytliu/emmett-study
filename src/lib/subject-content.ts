@@ -13,6 +13,7 @@ import { quizzes } from "@/content/quizzes";
 import { allHanziQuestions } from "@/content/hanzi";
 import { homeworks } from "@/content/homework";
 import { historyScenes } from "@/content/history";
+import { preps } from "@/content/prep";
 
 // 學習內容的統一卡片形狀（科目頁/首頁列表用）
 export type ContentKind =
@@ -22,7 +23,8 @@ export type ContentKind =
   | "hanzi"
   | "homework-draft"
   | "vocab"
-  | "history";
+  | "history"
+  | "prep";
 
 export interface ContentItem {
   key: string; // React key（含類型前綴避免撞號）
@@ -32,6 +34,7 @@ export interface ContentItem {
   subtitle: string;
   badge: string; // 類型徽章文字
   topicId?: string; // 對應章節地圖
+  archived?: boolean; // 暑假先修內容：科目頁收在「先修」摺疊區、首頁不計入
 }
 
 // 暑假作業 id → 科目（作業本身只有中文 subject 字串，這裡明確對應到 SubjectId）
@@ -77,8 +80,9 @@ export function contentForSubject(subjectId: SubjectId): ContentItem[] {
         href: `/unit/${u.id}`,
         title: u.title,
         subtitle: u.summary,
-        badge: u.checkMode === "ai" ? "五段式・AI 判讀" : "五段式概念",
+        badge: u.checkMode === "ai" ? "先修・五段式・AI 判讀" : "先修・五段式概念",
         topicId: mathUnitTopicId(u.order),
+        archived: true,
       });
     }
   }
@@ -101,8 +105,9 @@ export function contentForSubject(subjectId: SubjectId): ContentItem[] {
         href: `/wenyan/${w.id}`,
         title: `文言字・${w.word}`,
         subtitle: w.teaser,
-        badge: "古今異義推導",
+        badge: "先修・古今異義推導",
         topicId: "chinese-pre-1",
+        archived: true,
       });
     }
   }
@@ -131,6 +136,23 @@ export function contentForSubject(subjectId: SubjectId): ContentItem[] {
     }
   }
 
+  for (const p of preps) {
+    if (p.subjectId !== subjectId) continue;
+    const cards = p.sections.reduce(
+      (n, s) => n + (s.kind === "flashcards" ? s.cards.length : 0),
+      0,
+    );
+    items.push({
+      key: `prep-${p.id}`,
+      kind: "prep",
+      href: `/prep/${p.id}`,
+      title: p.title,
+      subtitle: p.description,
+      badge: cards > 0 ? `考前複習・${cards} 張卡` : "考前複習",
+      topicId: p.topicId,
+    });
+  }
+
   for (const q of quizzes) {
     if (q.subjectId !== subjectId) continue;
     items.push({
@@ -154,6 +176,7 @@ export function contentForSubject(subjectId: SubjectId): ContentItem[] {
       title: hw.title,
       subtitle: hw.kind === "vocab" ? "看中文拼英文，拼到全對才過關" : hw.pdfNote,
       badge: hw.kind === "vocab" ? "暑假作業・單字" : "暑假作業・打草稿",
+      archived: true,
     });
   }
 

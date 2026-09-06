@@ -3,7 +3,7 @@ chcp 65001 >nul
 cd /d "%~dp0"
 echo.
 echo ========================================
-echo    國中數學教材網站（本機完整版）
+echo    Emmett 學習基地（本機完整版）
 echo ========================================
 echo.
 if not exist node_modules (

@@ -45,12 +45,10 @@
     @apply border-border;
   }
   body {
-    /* 放射狀漸層「色彩花團」背景，取代素底（參考 emmett-review 的活潑感） */
+    /* 2026-09 學期版：背景收斂成安靜的淡底＋一抹主色暈染，把注意力留給內容。 */
     color: hsl(var(--foreground));
     background:
-      radial-gradient(1100px 620px at 6% -10%, hsl(258 100% 90% / 0.55) 0%, transparent 55%),
-      radial-gradient(1000px 620px at 104% 6%, hsl(180 90% 84% / 0.45) 0%, transparent 55%),
-      radial-gradient(960px 640px at 50% 112%, hsl(330 100% 90% / 0.5) 0%, transparent 55%),
+      radial-gradient(900px 500px at 8% -10%, hsl(258 100% 92% / 0.45) 0%, transparent 60%),
       hsl(250 100% 99%);
     background-attachment: fixed;
     min-height: 100vh;
@@ -145,4 +143,25 @@
 }
 .float-bob {
   animation: float-bob 8s ease-in-out infinite;
+}
+
+/* ── 翻卡（考前複習頁 prep-player）── */
+.flip {
+  perspective: 1200px;
+  -webkit-tap-highlight-color: transparent;
+}
+.flip-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.2, 0.75, 0.3, 1);
+}
+.flip.open .flip-inner {
+  transform: rotateY(180deg);
+}
+.flip-back {
+  transform: rotateY(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .flip-inner {
+    transition: none;
+  }
 }

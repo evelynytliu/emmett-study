@@ -19,6 +19,8 @@ import {
 import { WenyanParentSummary } from "@/components/wenyan/wenyan-parent-summary";
 import { QuizParentSummary } from "@/components/quiz-parent-summary";
 import { HanziParentSummary } from "@/components/hanzi-parent-summary";
+import { ExamParentSummary } from "@/components/exam-parent-summary";
+import { PrepParentSummary } from "@/components/prep-parent-summary";
 import {
   getAllPracticeDataCloud,
   syncPracticeLocalToSupabase,
@@ -307,31 +309,15 @@ export default function ParentPage() {
       </div>
       <h1 className="text-2xl font-bold tracking-tight">家長檢視</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        依區塊整理孩子的學習紀錄：數學五段式單元（點單元名展開細節）、國文形音義與文言文、各科線上題目。
+        由上而下：學校考試（成績走勢、錯的概念）→ 考前複習頁的回鍋狀況 → 各科線上題目 →
+        國文形音義／文言文 → 封存的暑假先修（數學五段式單元）。
       </p>
 
-      {/* 完整先修課表進度總覽 */}
-      <Link
-        href="/course"
-        className="group mt-4 block rounded-xl border border-primary/30 bg-primary/5 p-4 transition-all hover:border-primary/50"
-      >
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
-              <GraduationCap className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="font-semibold">完整先修課表</p>
-              <p className="text-sm text-muted-foreground">
-                {loaded
-                  ? `已完成 ${doneUnits}/${totalUnitSteps} 單元、${checkpointsDone} 個間隔複習檢核點`
-                  : "讀取中…"}
-              </p>
-            </div>
-          </div>
-          <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
-        </div>
-      </Link>
+      {/* 學校考試：排程、成績走勢、錯的概念（exams.ts） */}
+      <ExamParentSummary />
+
+      {/* 考前複習頁：各頁翻卡的掌握狀況 */}
+      <PrepParentSummary />
 
       {/* 提示：未啟用雲端時，資料只在孩子的裝置上 */}
       {!isSupabaseEnabled && (
@@ -458,14 +444,48 @@ export default function ParentPage() {
         <div className="mt-10 text-center text-muted-foreground">讀取中…</div>
       ) : (
         <>
-          {/* ── 數學・五段式單元 ── */}
-          <section className="mt-8">
-            <div className="mb-3 flex items-center gap-2">
-              <Calculator className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold tracking-tight">
-                數學・五段式單元
-              </h2>
+          {/* ── 各科線上題目答題狀況（跨五科） ── */}
+          <QuizParentSummary />
+
+          {/* ── 國文・形音義大作戰 ── */}
+          <HanziParentSummary />
+
+          {/* ── 國文・文言文（古今異義） ── */}
+          <WenyanParentSummary />
+
+          {/* ── 封存：暑假先修（數學五段式單元、課表）── 平常收合 */}
+          <details className="group mt-8 rounded-2xl border bg-card/60">
+          <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3.5 [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
+              <Calculator className="h-4 w-4" />
+              封存・2026 暑假先修：數學五段式單元
+              {loaded && (
+                <span className="font-normal">
+                  （完成 {doneUnits}/{totalUnitSteps} 單元、{checkpointsDone} 個檢核點）
+                </span>
+              )}
+            </span>
+            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="border-t px-5 py-4">
+          <Link
+            href="/course"
+            className="group/course mb-4 flex items-center justify-between gap-4 rounded-xl border border-primary/30 bg-primary/5 p-4 transition-all hover:border-primary/50"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <GraduationCap className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-semibold">完整先修課表</p>
+                <p className="text-sm text-muted-foreground">
+                  已完成 {doneUnits}/{totalUnitSteps} 單元、{checkpointsDone} 個間隔複習檢核點
+                </p>
+              </div>
             </div>
+            <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+          </Link>
+          <section>
             {!anyData ? (
               <div className="rounded-xl border border-dashed bg-card/60 p-6 text-center">
                 <p className="text-sm text-muted-foreground">
@@ -498,15 +518,8 @@ export default function ParentPage() {
               </>
             )}
           </section>
-
-          {/* ── 國文・形音義大作戰 ── */}
-          <HanziParentSummary />
-
-          {/* ── 國文・文言文（古今異義） ── */}
-          <WenyanParentSummary />
-
-          {/* ── 各科線上題目答題狀況（跨五科） ── */}
-          <QuizParentSummary />
+          </div>
+          </details>
         </>
       )}
     </div>

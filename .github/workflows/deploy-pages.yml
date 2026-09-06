@@ -34,6 +34,8 @@ jobs:
         run: npm run build
         env:
           BUILD_TARGET: pages
+          # 讓 basePath 跟著 repo 名稱走：改名 repo 不用改 next.config.mjs
+          REPO_NAME: ${{ github.event.repository.name }}
           # 公開版也連同一個 Supabase（兩邊資料共通）。這些值會被打進靜態網站，
           # 所以用密碼門（NEXT_PUBLIC_APP_PASSCODE）擋住路過的陌生人。
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
