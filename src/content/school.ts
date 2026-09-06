@@ -91,3 +91,9 @@ export function todayIso(now = new Date()): string {
   const d = String(now.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
+
+// 「7上」→「七年級」（科目頁頭、家長頁用）
+export function gradeLabel(sem: Semester): string {
+  const g = sem[0];
+  return g === "7" ? "七年級" : g === "8" ? "八年級" : "九年級";
+}

@@ -270,8 +270,19 @@ console.log("\n📅 考試排程 exams.ts");
         if (!set.has(m[2])) err(`${tag} 連結指到不存在的內容：${l.href}`);
       }
     }
+    if (e.result) {
+      const r = e.result;
+      const total = r.total ?? 100;
+      if (r.score !== undefined && (r.score < 0 || r.score > total))
+        err(`${tag} 分數 ${r.score} 超出滿分 ${total}`);
+      if (r.mistakesQuizId && !quizIds.has(r.mistakesQuizId))
+        err(`${tag} 錯題題組不存在：${r.mistakesQuizId}`);
+      if (r.score === undefined && !r.grade && !r.note)
+        warn(`${tag} result 沒有分數、等第或備註`);
+    }
   }
-  ok(`${exams.length} 場考試`);
+  const withResult = exams.filter((e) => e.result).length;
+  ok(`${exams.length} 場考試（${withResult} 場已登記成績）`);
 }
 
 // ── 總結 ──

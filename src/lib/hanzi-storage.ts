@@ -4,6 +4,7 @@
 // 有 Supabase 就 append 一筆存檔上雲；上雲失敗不影響本機。
 
 import { getSupabase, isSupabaseEnabled } from "./supabase";
+import { touchStreak } from "./streak";
 
 export interface HanziAttempt {
   setId: string;
@@ -99,6 +100,7 @@ export async function syncHanziPool(): Promise<HanziPoolState> {
 // 每輪結束呼叫：存本機＋上雲（上雲失敗不影響本機）。
 export async function saveHanziPool(state: HanziPoolState): Promise<void> {
   writeHanziPoolLocal(state);
+  touchStreak();
   if (isSupabaseEnabled) {
     const sb = getSupabase();
     if (sb) {

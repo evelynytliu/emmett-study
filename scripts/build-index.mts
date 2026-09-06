@@ -27,7 +27,9 @@ L("## 考試排程（exams.ts）");
 L();
 if (exams.length === 0) L("_尚無_");
 for (const e of [...exams].sort((a, b) => a.date.localeCompare(b.date))) {
-  L(`- ${e.date} ${e.subject} ${e.kind}「${e.name}」${e.scope ? `（${e.scope}）` : ""} → ${e.links.map((l) => l.href).join(", ") || "無連結"}`);
+  const r = e.result;
+  const res = r ? `｜結果：${r.score !== undefined ? `${r.score}/${r.total ?? 100}` : (r.grade ?? "—")}${r.weak?.length ? `，錯：${r.weak.join("、")}` : ""}${r.mistakesQuizId ? `，錯題回鍋 ${r.mistakesQuizId}` : ""}` : "";
+  L(`- ${e.date} ${e.subject} ${e.kind}「${e.name}」${e.scope ? `（${e.scope}）` : ""} → ${e.links.map((l) => l.href).join(", ") || "無連結"}${res}`);
 }
 L();
 

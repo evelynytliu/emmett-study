@@ -5,6 +5,7 @@
 
 import { getSupabase, isSupabaseEnabled } from "./supabase";
 import { todayIso } from "@/content/school";
+import { touchStreak } from "./streak";
 
 // 間隔複習：連續答對 n 次 → 幾天後再看；連續 5 次視為掌握
 export const PREP_INTERVALS = [1, 3, 7, 14, 30];
@@ -83,6 +84,7 @@ export async function syncPrepPool(): Promise<PrepPoolState> {
 
 export async function savePrepPool(state: PrepPoolState): Promise<void> {
   lsWrite(POOL_KEY, state);
+  touchStreak();
   if (!isSupabaseEnabled) return;
   const sb = getSupabase();
   if (!sb) return;

@@ -10,6 +10,7 @@ import type { ContentItem } from "@/lib/subject-content";
 import { getQuizRecord } from "@/lib/quiz-storage";
 import { getHanziPoolLocal } from "@/lib/hanzi-storage";
 import { allHanziQuestions } from "@/content/hanzi";
+import { school, roadmap, gradeLabel } from "@/content/school";
 
 // 科目頁只需要這三個欄位（題組與形音義的紀錄共用同一形狀）
 // 形音義題庫卡：bestFirstTry 放「已精熟字數」，顯示文字另外分支
@@ -85,7 +86,12 @@ export function SubjectView({
     return m;
   }, [items]);
 
-  const semesters = ["7上", "7下", "先修"] as const;
+  // 章節地圖分組：目前學期排最前，其餘照三年順序，「先修」放最後
+  const semesters = React.useMemo(() => {
+    const all = roadmap.map((r) => r.semester);
+    const rest = all.filter((s) => s !== school.currentSemester);
+    return [school.currentSemester, ...rest, "先修" as const];
+  }, []);
   const active = items.filter((it) => !it.archived);
   const archived = items.filter((it) => it.archived);
 
@@ -155,13 +161,13 @@ export function SubjectView({
       >
         <span
           aria-hidden
-          className="float-bob pointer-events-none absolute -right-2 top-2 text-7xl opacity-25"
+          className="pointer-events-none absolute -right-2 top-2 text-7xl opacity-20"
         >
           {subject.emoji}
         </span>
         <div className="relative">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-medium backdrop-blur">
-            {subject.publisher}版・七年級
+            {subject.publisher}版・{gradeLabel(school.currentSemester)}
           </div>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight">
             {subject.emoji} {subject.name}基地
@@ -220,6 +226,11 @@ export function SubjectView({
               <div key={sem}>
                 <h3 className="mb-2 text-sm font-bold text-muted-foreground">
                   {sem === "先修" ? "先修・基礎能力" : `${sem}學期`}
+                  {sem === school.currentSemester && (
+                    <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-[11px] text-white">
+                      現在
+                    </span>
+                  )}
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {topics.map((t) => {
