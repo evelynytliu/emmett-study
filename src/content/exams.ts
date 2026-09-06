@@ -40,7 +40,10 @@ export const exams: Exam[] = [
     kind: "小考",
     name: "1-2 顯微鏡部位名稱",
     scope: "翰林自然 1-2，課本 p.30–31",
-    links: [{ href: "/prep/prep-science-microscope", title: "顯微鏡部位翻卡" }],
+    links: [
+      { href: "/prep/prep-science-microscope", title: "顯微鏡部位：認圖・翻卡" },
+      { href: "/quiz/quiz-science-microscope-1", title: "理解題驗收（13 題）" },
+    ],
   },
 ];
 

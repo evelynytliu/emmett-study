@@ -15,6 +15,7 @@ import { homeworks } from "../src/content/homework";
 import { historyScenes } from "../src/content/history";
 import { hanziSets } from "../src/content/hanzi";
 import { preps } from "../src/content/prep";
+import { PREP_FIGURES } from "../src/content/prep/types";
 import { exams } from "../src/content/exams";
 
 let errors = 0;
@@ -244,6 +245,17 @@ console.log("\n🗂️ 考前複習頁 prep/");
         if (s.rows.length === 0) err(`${st} 沒有列`);
       } else if (s.kind === "quiz") {
         if (!quizIds.has(s.quizId)) err(`${st} 找不到題組：${s.quizId}`);
+      } else if (s.kind === "diagram") {
+        if (!PREP_FIGURES.includes(s.figure)) err(`${st} 示意圖不存在：${s.figure}`);
+        if (s.hotspots.length < 2) err(`${st} 熱點太少`);
+        const hs = new Set<string>();
+        for (const h of s.hotspots) {
+          if (hs.has(h.id)) err(`${st} 熱點 id 重複：${h.id}`);
+          hs.add(h.id);
+          if (!h.name?.trim()) err(`${st} 熱點 ${h.id} 沒有名稱`);
+          if (h.x < 0 || h.x > 200 || h.y < 0 || h.y > 260)
+            err(`${st} 熱點 ${h.id} 座標超出 viewBox 200×260：(${h.x}, ${h.y})`);
+        }
       }
     }
   }
