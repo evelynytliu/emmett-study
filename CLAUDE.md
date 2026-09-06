@@ -83,6 +83,14 @@ npm run check   # = validate（結構）＋ index（更新 docs/CONTENT-INDEX.md
 - GitHub Pages（備援靜態版）：`.github/workflows/deploy-pages.yml`，basePath 跟著 repo 名（workflow 注入 `REPO_NAME`），改 repo 名不用改程式。
 - 本機完整版 `npm run dev`（或雙擊 `啟動教材.bat`）。
 
+## 姊妹站：learning-tracker（獨立 repo，**不合併**）
+
+- `D:\Evelyn\learning-tracker` → `https://learning-tracker-blush.vercel.app`（Next 15、Supabase Auth、PWA 推播）。
+- **分工**：tracker 管「行為」（每日打卡、閱讀、螢幕時間、孩子自己登記錯題＋為什麼錯）；
+  本站管「內容」（複習頁、題組、回鍋、考試排程、錯題換題再練）。
+- **錯題流程**：孩子在 tracker 登記錯題與原因 → 媽媽拿那批錯題對 Claude 用 `after-exam` → 本站出變形題組回鍋。
+- 首頁有 tracker 入口（`school.ts` 的 `siblingApps`）。兩站不共用程式碼、不共用登入；資料要互通時走 Supabase 查詢，不搬程式。
+
 ## 不要做的事
 
 - 不要把先修的五段式數學單元改成「講解＋練習」；它們封存但設計不動。
