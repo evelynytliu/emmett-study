@@ -34,15 +34,17 @@ export interface Exam {
 
 export const exams: Exam[] = [
   {
-    id: "2026-09-10-sci-micro",
-    date: "2026-09-10",
+    id: "2026-09-07-sci-method-micro",
+    date: "2026-09-07",
     subject: "science",
     kind: "小考",
-    name: "1-2 顯微鏡部位名稱",
-    scope: "翰林自然 1-2，課本 p.30–31",
+    name: "1-2 科學方法流程＋顯微鏡部位",
+    scope: "翰林自然 1-2，課本 p.23–25（科學方法）、p.30–31（顯微鏡）",
     links: [
+      { href: "/prep/prep-science-method", title: "科學方法：排步驟・變因翻卡" },
+      { href: "/quiz/quiz-science-method-1", title: "科學方法理解題（12 題）" },
       { href: "/prep/prep-science-microscope", title: "顯微鏡部位：認圖・翻卡" },
-      { href: "/quiz/quiz-science-microscope-1", title: "理解題驗收（13 題）" },
+      { href: "/quiz/quiz-science-microscope-1", title: "顯微鏡理解題（13 題）" },
     ],
   },
 ];

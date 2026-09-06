@@ -17,6 +17,8 @@ description: 從課本照片或範圍描述做一頁「考前複習頁」（重�
    - `keypoints`：一句一重點，用【】挖空要背的關鍵字，一句最多 2–3 個【】。
    - `compare`：兩個常被混淆的東西，列對比；儲存格也能【挖空】。
    - `quiz`：若已有或順手出了題組，掛 `quizId` 當驗收。
+   - `sequence`：**排順序**（流程／步驟類：科學方法七步、實驗步驟、消化順序）。items 照正確順序寫，
+     每步可帶 `detail` 一句說明；引擎提供「看順序／自己排」。範例：`science-method.ts`。
    - `diagram`：**點圖認部位**（部位／構造名稱最有效）。要一張示意圖（`figure`，在
      `src/components/prep-figures.tsx` 用 SVG 畫、`PREP_FIGURES` 登記，viewBox 200×260）＋熱點
      `{ id, name, x, y, side }`。三種玩法（看標籤／認名稱四選一／找位置）引擎自動提供。
