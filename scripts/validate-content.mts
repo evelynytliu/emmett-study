@@ -14,6 +14,8 @@ import { wenyanWords } from "../src/content/wenyan";
 import { homeworks } from "../src/content/homework";
 import { historyScenes } from "../src/content/history";
 import { hanziSets } from "../src/content/hanzi";
+import { preps } from "../src/content/prep";
+import { exams } from "../src/content/exams";
 
 let errors = 0;
 let warnings = 0;
@@ -206,6 +208,70 @@ console.log("\n🏛️ 歷史 3D 場景 history/");
       0,
     )} 張名詞卡`,
   );
+}
+
+
+// ── 考前複習頁 ──
+console.log("\n🗂️ 考前複習頁 prep/");
+{
+  const seen = new Set<string>();
+  const quizIds = new Set(quizzes.map((q) => q.id));
+  for (const p of preps) {
+    const tag = `[${p.id}]`;
+    if (seen.has(p.id)) err(`${tag} 複習頁 id 重複`);
+    seen.add(p.id);
+    if (!p.id.startsWith("prep-")) warn(`${tag} id 建議以 prep- 開頭`);
+    if (!subjectIds.has(p.subjectId)) err(`${tag} subjectId 不存在：${p.subjectId}`);
+    if (p.topicId && !topicIds.has(p.topicId))
+      warn(`${tag} topicId 不在章節地圖：${p.topicId}`);
+    if (p.sections.length === 0) err(`${tag} 沒有任何區塊`);
+    const cardIds = new Set<string>();
+    for (const [si, s] of p.sections.entries()) {
+      const st = `${tag} 區塊 ${si + 1}（${s.kind}）`;
+      if (s.kind === "flashcards") {
+        if (s.cards.length === 0) err(`${st} 沒有卡片`);
+        for (const c of s.cards) {
+          if (cardIds.has(c.id)) err(`${st} 卡片 id 重複：${c.id}（整頁內要唯一）`);
+          cardIds.add(c.id);
+          if (!c.front?.trim() || !c.back?.trim()) err(`${st} 卡片 ${c.id} 正面或背面是空的`);
+        }
+      } else if (s.kind === "keypoints") {
+        if (s.items.length === 0) err(`${st} 沒有重點`);
+        for (const t of s.items)
+          if ((t.match(/【/g) ?? []).length !== (t.match(/】/g) ?? []).length)
+            err(`${st} 挖空括號不成對：${t}`);
+      } else if (s.kind === "compare") {
+        if (s.rows.length === 0) err(`${st} 沒有列`);
+      } else if (s.kind === "quiz") {
+        if (!quizIds.has(s.quizId)) err(`${st} 找不到題組：${s.quizId}`);
+      }
+    }
+  }
+  ok(`${preps.length} 頁複習頁`);
+}
+
+// ── 考試排程 ──
+console.log("\n📅 考試排程 exams.ts");
+{
+  const seen = new Set<string>();
+  const prepIds = new Set(preps.map((p) => p.id));
+  const quizIds = new Set(quizzes.map((q) => q.id));
+  for (const e of exams) {
+    const tag = `[${e.id}]`;
+    if (seen.has(e.id)) err(`${tag} 考試 id 重複`);
+    seen.add(e.id);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(e.date)) err(`${tag} 日期格式要 YYYY-MM-DD：${e.date}`);
+    if (e.subject !== "全科" && !subjectIds.has(e.subject))
+      err(`${tag} subject 不存在：${e.subject}`);
+    for (const l of e.links) {
+      const m = l.href.match(/^\/(prep|quiz)\/(.+)$/);
+      if (m) {
+        const set = m[1] === "prep" ? prepIds : quizIds;
+        if (!set.has(m[2])) err(`${tag} 連結指到不存在的內容：${l.href}`);
+      }
+    }
+  }
+  ok(`${exams.length} 場考試`);
 }
 
 // ── 總結 ──

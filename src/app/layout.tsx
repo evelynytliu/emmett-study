@@ -5,9 +5,9 @@ import { VoiceProvider } from "@/components/voice/voice-provider";
 import { VoicePanel } from "@/components/voice/voice-panel";
 
 export const metadata: Metadata = {
-  title: "國一學習基地｜五科概念與線上題目",
+  title: "Emmett 學習基地｜國中五科複習與預習",
   description:
-    "國文・數學・英文・自然・社會，用生動方式把概念弄懂，再做線上題目驗收。重點都一樣：用自己的話想出來，不是照背、照抄。",
+    "國中三年的複習與預習基地：考前複習頁、線上題組、五段式概念單元。重點都一樣：先遮答案、用自己的話想出來，不是照背。",
 };
 
 export default function RootLayout({

@@ -1,11 +1,27 @@
-# 升國中・暑假學習基地
+# Emmett 學習基地（國中三年複習／預習網站）
 
-為一位升國一的孩子做的學習網站，兩大功能：
+> 2026-09 起改為**學期版**：首頁是學期儀表板（會考倒數、今天該回鍋的卡、接下來要考），
+> 主力是**考前複習頁**（`/prep/<id>`：重點挖空＋翻卡＋比較表＋題組入口）。
+> 2026 暑假的「升國中先修」內容全部封存在 `/archive`，仍可使用。
+> 給 Claude Code 的專案記憶在 [`CLAUDE.md`](CLAUDE.md)，內容索引在 [`docs/CONTENT-INDEX.md`](docs/CONTENT-INDEX.md)。
 
-1. **暑假作業引導** — 帶他把各科暑假作業一步步想清楚、打成草稿，再**親手抄到作業本上**。
-2. **國中數學・概念理解** — 用同一套**五段式流程**破解「背公式、看題型反射解題」的習慣。
+## 平常怎麼用（媽媽）
 
-兩者重點一樣：**用自己的話想出來，不是照背、照抄**。設計理念見 [`CLAUDE.md`](CLAUDE.md)。
+1. 拍課本要考的範圍 → 開 Claude Code 說「幫我做 XX 的複習頁，X 月 X 日小考」。
+2. Claude 會用 `.claude/skills/add-prep`（＋`add-exam`）寫好資料檔、跑 `npm run check`。
+3. commit、push `main` → GitHub Pages 自動更新 → 孩子在 iPad 打開首頁就看到倒數與連結。
+
+## 網址與 repo 改名
+
+- 目前：`https://evelynytliu.github.io/guozhong-math-concepts/`
+- 建議把 repo 改名為 **`emmett-study`**（GitHub → Settings → Repository name），
+  之後三年到六年都用 `https://evelynytliu.github.io/emmett-study/`。
+  部署的 basePath 會自動跟著 repo 名稱走（workflow 注入 `REPO_NAME`），**不用改程式**；
+  GitHub 會把舊網址自動轉到新網址。本機 clone 記得 `git remote set-url origin <新網址>`。
+
+---
+
+## 以下為 2026 暑假先修版的說明（保留參考）
 
 ## 怎麼跑（本機自用）
 

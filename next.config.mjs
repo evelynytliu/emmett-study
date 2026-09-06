@@ -8,7 +8,9 @@
 // 不設這個變數時（本機 npm run dev / npm run start）一切照舊，含 AI + Supabase。
 
 const isPages = process.env.BUILD_TARGET === "pages";
-const repo = "guozhong-math-concepts";
+// repo 名稱由部署工作流程注入（GitHub Actions 的 github.event.repository.name），
+// 所以在 GitHub 上把 repo 改名不用改程式；本機建靜態版時可自己設 REPO_NAME。
+const repo = process.env.REPO_NAME || "guozhong-math-concepts";
 
 const nextConfig = isPages
   ? {

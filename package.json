@@ -1,14 +1,16 @@
 {
-  "name": "guozhong-math-concepts",
+  "name": "emmett-study",
   "version": "0.1.0",
   "private": true,
-  "description": "國中數學「概念理解」互動教材網站 — 本地優先、五段式教學流程",
+  "description": "Emmett 學習基地：國中三年的複習與預習網站（考前複習頁、題組、五段式概念單元）",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "validate": "tsx scripts/validate-content.mts",
+    "index": "tsx scripts/build-index.mts",
+    "check": "npm run validate && npm run index && npx tsc --noEmit",
     "audio": "tsx scripts/generate-audio.mts"
   },
   "dependencies": {
