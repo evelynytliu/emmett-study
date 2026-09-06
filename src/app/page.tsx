@@ -8,7 +8,13 @@ import * as React from "react";
 import Link from "next/link";
 import { subjects } from "@/content/subjects";
 import { contentForSubject } from "@/lib/subject-content";
-import { school, currentPlan, daysUntil, todayIso } from "@/content/school";
+import {
+  school,
+  siblingApps,
+  currentPlan,
+  daysUntil,
+  todayIso,
+} from "@/content/school";
 import {
   upcomingExams,
   pastExams,
@@ -24,6 +30,8 @@ import {
   Archive,
   ArrowRight,
   CalendarDays,
+  ClipboardCheck,
+  ExternalLink,
   Flame,
   History,
   Landmark,
@@ -363,6 +371,23 @@ export default function HomePage() {
           看完整三年路線與會考說明 <ArrowRight className="h-4 w-4" />
         </Link>
       </section>
+
+      {/* ── 姊妹站：學習打卡＋錯題登記（另一個獨立網站） ── */}
+      <a
+        href={siblingApps.tracker.url}
+        target="_blank"
+        rel="noopener"
+        className="group mb-3 flex items-center gap-3 rounded-2xl border border-dashed bg-card/70 p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+      >
+        <ClipboardCheck className="h-5 w-5 shrink-0 text-primary" />
+        <div className="min-w-0 flex-1">
+          <div className="font-bold">{siblingApps.tracker.name}</div>
+          <div className="text-xs text-muted-foreground">
+            {siblingApps.tracker.hint}。今天做了什麼去那邊打卡；哪裡不會回這邊練。
+          </div>
+        </div>
+        <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </a>
 
       {/* ── 其他入口 ── */}
       <section className="grid gap-3 sm:grid-cols-3">

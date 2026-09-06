@@ -97,3 +97,13 @@ export function gradeLabel(sem: Semester): string {
   const g = sem[0];
   return g === "7" ? "七年級" : g === "8" ? "八年級" : "九年級";
 }
+
+// 姊妹站：學習打卡＋錯題登記（learning-tracker，另一個獨立 repo，不合併）。
+// 分工：tracker 管「今天有沒有做」與孩子自己登記錯題原因；本站管「東西有沒有真的會」與錯題換題再練。
+export const siblingApps = {
+  tracker: {
+    name: "學習打卡・錯題登記",
+    url: "https://learning-tracker-blush.vercel.app",
+    hint: "每日打卡、閱讀、錯題登記與原因",
+  },
+};
