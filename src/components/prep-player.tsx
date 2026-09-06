@@ -56,12 +56,14 @@ function Cloze({
   revealed,
   onToggle,
   color,
+  soft,
 }: {
   text: string;
   keyPrefix: string;
   revealed: Set<string>;
   onToggle: (k: string) => void;
   color: string;
+  soft: string;
 }) {
   let i = 0;
   return (
@@ -80,11 +82,10 @@ function Cloze({
               "mx-0.5 inline-block min-w-[2.5em] rounded-md px-1.5 align-baseline font-bold leading-snug transition-colors",
               show ? "" : "select-none",
             )}
-            style={
-              show
-                ? { background: `${color}1a`, color }
-                : { background: color, color }
-            }
+            // 遮住＝實心科目色（字同色所以看不見）；打開＝淡底＋科目色字。
+            // 注意背景值一定要是合法顏色：之前用 `${color}1a`（hsl 字串接十六進位）是無效值，
+            // 瀏覽器會忽略、保留原本的實心底，看起來就像「點了沒反應」。
+            style={show ? { background: soft, color } : { background: color, color }}
           >
             {p.t}
           </button>
@@ -461,7 +462,7 @@ export function PrepPlayer({ prep }: { prep: PrepSet }) {
                         {String(ii + 1).padStart(2, "0")}
                       </span>
                       <span>
-                        <Cloze text={t} keyPrefix={`${si}-${ii}`} revealed={revealed} onToggle={toggleBlank} color={color} />
+                        <Cloze text={t} keyPrefix={`${si}-${ii}`} revealed={revealed} onToggle={toggleBlank} color={color} soft={soft} />
                       </span>
                     </li>
                   ))}
@@ -487,10 +488,10 @@ export function PrepPlayer({ prep }: { prep: PrepSet }) {
                         <tr key={ri} className="border-b last:border-0 align-top">
                           <th className="p-3 text-left font-bold text-muted-foreground">{r.label}</th>
                           <td className="p-3 leading-relaxed">
-                            <Cloze text={r.a} keyPrefix={`${si}-${ri}-a`} revealed={revealed} onToggle={toggleBlank} color={color} />
+                            <Cloze text={r.a} keyPrefix={`${si}-${ri}-a`} revealed={revealed} onToggle={toggleBlank} color={color} soft={soft} />
                           </td>
                           <td className="p-3 leading-relaxed">
-                            <Cloze text={r.b} keyPrefix={`${si}-${ri}-b`} revealed={revealed} onToggle={toggleBlank} color={color} />
+                            <Cloze text={r.b} keyPrefix={`${si}-${ri}-b`} revealed={revealed} onToggle={toggleBlank} color={color} soft={soft} />
                           </td>
                         </tr>
                       ))}
