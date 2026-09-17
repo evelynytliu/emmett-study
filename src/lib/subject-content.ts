@@ -142,13 +142,14 @@ export function contentForSubject(subjectId: SubjectId): ContentItem[] {
       (n, s) => n + (s.kind === "flashcards" ? s.cards.length : 0),
       0,
     );
+    const levels = p.sections.reduce((n, s) => n + (s.kind === "mission" ? s.levels.length : 0), 0);
     items.push({
       key: `prep-${p.id}`,
       kind: "prep",
       href: `/prep/${p.id}`,
       title: p.title,
       subtitle: p.description,
-      badge: cards > 0 ? `考前複習・${cards} 張卡` : "考前複習",
+      badge: levels > 0 ? `闖關・${levels} 關` : cards > 0 ? `考前複習・${cards} 張卡` : "考前複習",
       topicId: p.topicId,
     });
   }

@@ -49,7 +49,8 @@ for (const s of subjects) {
     L(`- ${has ? "✅" : "▫️"} \`${t.id}\` ${t.semester} ${t.title}`);
     for (const p of tp) {
       const cards = p.sections.reduce((n, x) => n + (x.kind === "flashcards" ? x.cards.length : 0), 0);
-      L(`  - 複習頁 \`${p.id}\`「${p.title}」${cards ? `${cards} 張卡` : ""}${p.source ? `・${p.source}` : ""}`);
+      const levels = p.sections.reduce((n, x) => n + (x.kind === "mission" ? x.levels.length : 0), 0);
+      L(`  - 複習頁 \`${p.id}\`「${p.title}」${cards ? `${cards} 張卡` : ""}${levels ? `闖關 ${levels} 關` : ""}${p.source ? `・${p.source}` : ""}`);
     }
     for (const q of tq) L(`  - 題組 \`${q.id}\`「${q.title}」${q.questions.length} 題`);
   }

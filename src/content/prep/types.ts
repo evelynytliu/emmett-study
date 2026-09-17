@@ -62,7 +62,48 @@ export type PrepSection =
       title: string;
       intro?: string;
       items: { id: string; label: string; detail?: string }[];
+    }
+  | {
+      // 數線闖關：一關一個概念，關卡照順序解鎖。每題先自己作答（點數線／選答案），
+      // 對錯都會看到「為什麼」；答錯的題在同一關最後回鍋，全對才過關。
+      // 引擎在 src/components/mission-game.tsx。
+      kind: "mission";
+      title: string;
+      intro?: string;
+      line: { min: number; max: number }; // 數線範圍（整數）；所有題目的點都要落在裡面
+      levels: MissionLevel[];
     };
+
+export interface MissionLevel {
+  id: string; // 區塊內唯一，存過紀錄後別改
+  title: string;
+  goal: string; // 一句話：這關在練什麼
+  hint?: string; // 預設收起的提示（關鍵想法），卡住才點開
+  challenges: MissionChallenge[]; // 照難度由淺到深寫，引擎不打亂
+  // 熟練場：每次進關由 src/lib/mission-gen.ts 隨機出 count 題（challenges 留空陣列），過關會記時間。
+  //   signs＝去括號只看符號（選改寫後的式子）；addsub＝兩數加減（打答案）；chain＝三數連算＋括號前有減號（打答案）
+  generator?: { kind: MissionGenKind; count: number };
+}
+
+export const MISSION_GEN_KINDS = ["signs", "addsub", "chain"] as const;
+export type MissionGenKind = (typeof MISSION_GEN_KINDS)[number];
+
+interface MissionChallengeBase {
+  id: string; // 關卡內唯一
+  prompt: string;
+  why: string; // 作答後顯示的「為什麼」
+  concept: string; // 概念標籤（過關畫面列出卡住的概念）
+}
+
+export type MissionChallenge =
+  // 在數線上點出位置；targets 多個時要全部點出來
+  | (MissionChallengeBase & { type: "place"; targets: number[] })
+  // 選答案；layout "cards" 用大卡片（比大小用）
+  | (MissionChallengeBase & { type: "choice"; choices: string[]; answerIndex: number; layout?: "cards" })
+  // 用數字鍵盤打答案（整數）；expr 有寫就用大字顯示算式
+  | (MissionChallengeBase & { type: "input"; expr?: string; answer: number })
+  // 數線散步：先預測終點（點數線），再看小點一步一步走。expr 是算式，moves 是每一步位移
+  | (MissionChallengeBase & { type: "walk"; expr: string; start: number; moves: number[] });
 
 // 可用的示意圖（新增圖時同步在 prep-figures.tsx 畫、在這裡登記）
 export const PREP_FIGURES = ["microscope-compound", "microscope-dissecting"] as const;

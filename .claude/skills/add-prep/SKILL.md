@@ -24,6 +24,11 @@ description: 從課本照片或範圍描述做一頁「考前複習頁」（重�
      `{ id, name, x, y, side }`。三種玩法（看標籤／認名稱四選一／找位置）引擎自動提供。
      畫新圖時只求「相對位置跟課本圖一致、零件看得出來」，畫完在預覽裡確認標籤不重疊。
      範例：`science-microscope.ts` 的兩張顯微鏡。
+   - `mission`：**數線闖關**（數學概念沒站穩、要「玩中學＋練到熟」時用）。一關一個概念、照順序解鎖；
+     題型 `place`（點數線）／`choice`（選，`layout: "cards"` 比大小用）／`walk`（先預測終點再看小點走）／
+     `input`（數字鍵盤打答案）。每題必填 `why`＋`concept`；答錯同關回鍋。關卡加
+     `generator: { kind, count }` 就是熟練場（`src/lib/mission-gen.ts` 隨機出題、記時間；
+     要新題型就在那裡加 kind 並登記 `MISSION_GEN_KINDS`）。範例：`math-integers-mission.ts`。
 3. **寫檔** `src/content/prep/<subject>-<topic>.ts`，`id` 用 `prep-<subject>-<topic>`，
    `source` 填課本頁碼。卡片 `id` 短且**整頁唯一**（`c1…`、`s1…`）。
 4. **註冊** 進 `src/content/prep/index.ts` 的 `preps`。

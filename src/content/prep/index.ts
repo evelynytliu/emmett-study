@@ -6,8 +6,9 @@ import type { PrepSet } from "./types";
 import type { SubjectId } from "@/content/subjects";
 import { prepScienceMicroscope } from "./science-microscope";
 import { prepScienceMethod } from "./science-method";
+import { prepMathIntegersMission } from "./math-integers-mission";
 
-export const preps: PrepSet[] = [prepScienceMethod, prepScienceMicroscope];
+export const preps: PrepSet[] = [prepScienceMethod, prepScienceMicroscope, prepMathIntegersMission];
 
 export function getPrep(id: string): PrepSet | undefined {
   return preps.find((p) => p.id === id);

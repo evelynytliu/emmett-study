@@ -23,6 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 import { DiagramGame } from "./diagram-game";
 import { SequenceGame } from "./sequence-game";
+import { MissionGame } from "./mission-game";
 import {
   ArrowLeft,
   ArrowRight,
@@ -507,6 +508,14 @@ export function PrepPlayer({ prep }: { prep: PrepSet }) {
               <section key={si}>
                 <SectionHead title={s.title} intro={s.intro} color={color} soft={soft} chip={`${s.items.length} 步`} />
                 <SequenceGame items={s.items} color={color} soft={soft} storageKey={`gz-prep:sequence:${prep.id}:${si}`} />
+              </section>
+            );
+          }
+          if (s.kind === "mission") {
+            return (
+              <section key={si}>
+                <SectionHead title={s.title} intro={s.intro} color={color} soft={soft} chip={`${s.levels.length} 關`} />
+                <MissionGame levels={s.levels} line={s.line} color={color} soft={soft} storageKey={`gz-prep:mission:${prep.id}:${si}`} />
               </section>
             );
           }

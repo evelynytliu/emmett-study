@@ -15,7 +15,7 @@ import { homeworks } from "../src/content/homework";
 import { historyScenes } from "../src/content/history";
 import { hanziSets } from "../src/content/hanzi";
 import { preps } from "../src/content/prep";
-import { PREP_FIGURES } from "../src/content/prep/types";
+import { PREP_FIGURES, MISSION_GEN_KINDS } from "../src/content/prep/types";
 import { exams } from "../src/content/exams";
 
 let errors = 0;
@@ -252,6 +252,38 @@ console.log("\n🗂️ 考前複習頁 prep/");
           if (ids.has(it.id)) err(`${st} 步驟 id 重複：${it.id}`);
           ids.add(it.id);
           if (!it.label?.trim()) err(`${st} 步驟 ${it.id} 沒有名稱`);
+        }
+      } else if (s.kind === "mission") {
+        if (s.levels.length === 0) err(`${st} 沒有關卡`);
+        const inLine = (v: number) => Number.isInteger(v) && v >= s.line.min && v <= s.line.max;
+        const lv = new Set<string>();
+        for (const l of s.levels) {
+          const lt = `${st} 關卡 ${l.id}`;
+          if (lv.has(l.id)) err(`${lt} id 重複`);
+          lv.add(l.id);
+          if (l.generator) {
+            if (!MISSION_GEN_KINDS.includes(l.generator.kind)) err(`${lt} generator.kind 不存在：${l.generator.kind}`);
+            if (l.generator.count < 3) err(`${lt} 熟練場至少 3 題`);
+          } else if (l.challenges.length === 0) err(`${lt} 沒有題目`);
+          const cs = new Set<string>();
+          for (const c of l.challenges) {
+            const ct = `${lt} 題 ${c.id}`;
+            if (cs.has(c.id)) err(`${ct} id 重複`);
+            cs.add(c.id);
+            if (!c.prompt?.trim()) err(`${ct} 沒有題目文字`);
+            if (!c.why?.trim() || !c.concept?.trim()) err(`${ct} 缺 why 或 concept`);
+            if (c.type === "place") {
+              if (c.targets.length === 0 || !c.targets.every(inLine)) err(`${ct} targets 空的或超出數線`);
+            } else if (c.type === "choice") {
+              if (c.choices.length < 2 || !c.choices[c.answerIndex]) err(`${ct} 選項或 answerIndex 有誤`);
+            } else if (c.type === "walk") {
+              let p = c.start;
+              const path = [p, ...c.moves.map((m) => (p += m))];
+              if (c.moves.length === 0 || !path.every(inLine)) err(`${ct} 散步路徑空的或走出數線：${path.join("→")}`);
+            } else if (c.type === "input") {
+              if (!Number.isInteger(c.answer) || Math.abs(c.answer) > 999) err(`${ct} answer 要是 3 位數內的整數`);
+            }
+          }
         }
       } else if (s.kind === "diagram") {
         if (!PREP_FIGURES.includes(s.figure)) err(`${st} 示意圖不存在：${s.figure}`);
