@@ -13,7 +13,7 @@ export const prepMathMulDivMission: PrepSet = {
   topicId: "math-7a-1",
   title: "乘除・指數・科學記號闖關：負負為什麼得正",
   description:
-    "第 1 章後半的 9 關。乘法先在數線上「重複走」看懂負負得正，再練符號雷達、找錯、配對、排序、拼科學記號。後 3 關是熟練場，每次隨機出題、記時間。建議先過完「整數加減闖關」。",
+    "第 1 章後半的 11 關。乘法先在數線上「重複走」看懂負負得正，再練符號雷達、找錯、配對、排序、拼科學記號。後 4 關是熟練場，每次隨機出題、記時間。建議先過完「整數加減闖關」。",
   source: "康軒數學 1-3 正負數的乘除、1-4 指數記法與科學記號",
   order: 1,
   sections: [
@@ -69,6 +69,22 @@ export const prepMathMulDivMission: PrepSet = {
           ],
         },
         {
+          id: "E1",
+          title: "指數記法：把連乘寫短",
+          goal: "2×2×2×2×2 寫成 2⁵：底數是誰、指數是幾次。2⁵ 不是 2×5。",
+          hint: "aⁿ 讀作「a 的 n 次方」：a 是底數（被乘的那個數），n 是指數（乘了幾次）。2⁵ = 2×2×2×2×2 = 32，不是 2×5 = 10。10ⁿ 就是 1 後面 n 個 0。",
+          challenges: [
+            { id: "c1", type: "match", prompt: "把連乘和它的指數寫法配對。數一數乘了幾次。", pairs: [{ left: "3×3×3×3", right: "3⁴" }, { left: "2×2×2", right: "2³" }, { left: "5×5", right: "5²" }, { left: "2×2×2×2×2", right: "2⁵" }], why: "底數是「被乘的那個數」，指數是「乘了幾次」。3 乘了 4 次就是 3⁴；2 乘了 5 次是 2⁵。", concept: "指數記法：底數乘了幾次，指數就是幾" },
+            { id: "c2", type: "choice", layout: "cards", prompt: "2⁵ 和 5² 哪個大？先在心裡算出來。", choices: ["2⁵", "5²", "一樣大"], answerIndex: 0, why: "2⁵ = 2×2×2×2×2 = 32；5² = 5×5 = 25。所以 2⁵ 大。如果算成 2×5 和 5×2 就會以為一樣——指數不是乘法。", concept: "aⁿ 不是 a×n" },
+            { id: "c3", type: "input", prompt: "算出來。", expr: "3⁴", answer: 81, why: "3⁴ = 3×3×3×3 = 9×9 = 81。不是 3×4 = 12。", concept: "aⁿ 不是 a×n" },
+            { id: "c4", type: "choice", prompt: "在 (-4)³ 裡，「底數」是哪一個？", choices: ["4", "-4", "3", "-3"], answerIndex: 1, why: "括號把 -4 整個包起來當底數，指數 3 是「(-4) 乘 3 次」。所以底數是 -4，指數是 3。", concept: "底數＝被乘的那個數；有括號負號也算進去" },
+            { id: "c5", type: "spot", prompt: "小宇算 2⁴。哪一步錯了？", steps: ["2⁴ = 2×4", "= 8"], wrongIndex: 0, why: "2⁴ 是「2 乘 4 次」：2×2×2×2 = 16。第 1 步把指數當成乘法了。", concept: "aⁿ 不是 a×n" },
+            { id: "c6", type: "input", prompt: "寫成連乘再算：2³ 是三個 2，2² 是兩個 2。", expr: "2³ × 2²", answer: 32, why: "2³×2² = (2×2×2)×(2×2) = 8×4 = 32。總共五個 2 相乘，也就是 2⁵。", concept: "指數記法：底數乘了幾次，指數就是幾" },
+            { id: "c7", type: "choice", prompt: "「1 後面有 7 個 0」的數，用指數怎麼寫？", choices: ["7¹⁰", "10⁷", "10×7", "70"], answerIndex: 1, why: "10⁷ = 10 乘 7 次 = 10,000,000，1 後面 7 個 0。10ⁿ 的 n 就是 0 的個數，這是科學記號的基礎。", concept: "10ⁿ ＝ 1 後面 n 個 0" },
+            { id: "c8", type: "order", prompt: "由小到大排。先算出每一個的值。", items: [{ label: "1⁹", value: 1 }, { label: "2⁴", value: 16 }, { label: "5²", value: 25 }, { label: "3³", value: 27 }], why: "1⁹ = 1（1 乘幾次都是 1）、2⁴ = 16、5² = 25、3³ = 27。指數大不代表數大：1⁹ 最小。", concept: "aⁿ 的大小要算出來比，不能只看指數" },
+          ],
+        },
+        {
           id: "L4",
           title: "指數：括號在不在",
           goal: "(-2)⁴ 和 -2⁴ 差在哪？看括號決定負號有沒有一起乘。",
@@ -121,6 +137,14 @@ export const prepMathMulDivMission: PrepSet = {
           hint: "數負號：偶數個→正，奇數個→負。有 0 → 0。",
           challenges: [],
           generator: { kind: "mulsign", count: 15 },
+        },
+        {
+          id: "D4",
+          title: "熟練場・指數快算",
+          goal: "aⁿ、(-a)ⁿ、-aⁿ 三種混著出，直接打答案。每次 10 題隨機，會記時間。",
+          hint: "先寫成連乘再算；括號在→負號一起乘（數負號決定正負）；括號不在→最後才加負號，一定是負。",
+          challenges: [],
+          generator: { kind: "expo", count: 10 },
         },
         {
           id: "D2",

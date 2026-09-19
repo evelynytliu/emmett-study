@@ -86,7 +86,8 @@ export interface MissionLevel {
 }
 
 //   mulsign＝符號雷達（幾個數相乘，只判斷正／負／0）；muldiv＝乘除快算（打答案）；mixed＝四則混合（含平方，打答案）
-export const MISSION_GEN_KINDS = ["signs", "addsub", "chain", "mulsign", "muldiv", "mixed"] as const;
+//   expo＝指數快算（aⁿ／(-a)ⁿ／-aⁿ，打答案）
+export const MISSION_GEN_KINDS = ["signs", "addsub", "chain", "mulsign", "muldiv", "mixed", "expo"] as const;
 export type MissionGenKind = (typeof MISSION_GEN_KINDS)[number];
 
 interface MissionChallengeBase {

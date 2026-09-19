@@ -215,8 +215,30 @@ function genMixed(id: string): MissionChallenge {
     why: `${paren(a)} × ${paren(b)} = ${ab}，${paren(c)} × ${paren(d)} = ${cd}。再減：${steps(`${ab} - ${paren(cd)}`, flat([ab, -cd]), ab - cd)}。`, concept: "先乘除後加減；減負數＝加正數" };
 }
 
+// 指數快算：aⁿ、(-a)ⁿ、-aⁿ 三種形式（底數 2～5、指數 2～4，答案不超過三位數）
+function genExpo(id: string): MissionChallenge {
+  const a = rand(2, 5);
+  const n = rand(2, 4);
+  const form = rand(0, 2); // 0: aⁿ  1: (-a)ⁿ  2: -aⁿ
+  const pow = a ** n;
+  const chain = Array(n).fill(String(a)).join("×");
+  if (form === 0) {
+    return { id, type: "input", prompt: "寫成連乘再算。", expr: `${a}${sup(n)}`, answer: pow,
+      why: `${a}${sup(n)} = ${chain} = ${pow}。不是 ${a}×${n}。`, concept: "aⁿ 不是 a×n" };
+  }
+  if (form === 1) {
+    const ans = n % 2 === 0 ? pow : -pow;
+    return { id, type: "input", prompt: "括號在：負號一起乘。", expr: `(-${a})${sup(n)}`, answer: ans,
+      why: `(-${a})${sup(n)} 是 ${n} 個 (-${a}) 相乘：${n} 個負號，${n % 2 === 0 ? "偶數個→正" : "奇數個→負"}。${chain} = ${pow}，所以是 ${ans}。`,
+      concept: "(-a)ⁿ：負號一起乘，數負號決定正負" };
+  }
+  return { id, type: "input", prompt: "括號不在：先算次方，最後才加負號。", expr: `-${a}${sup(n)}`, answer: -pow,
+    why: `-${a}${sup(n)} 沒有括號，指數只貼著 ${a}：先算 ${a}${sup(n)} = ${pow}，再取相反數 = ${-pow}。不管 n 是奇數還是偶數，-aⁿ 都是負的。`,
+    concept: "-aⁿ：先算次方再加負號，結果是負" };
+}
+
 export function generateMission(kind: MissionGenKind, count: number): MissionChallenge[] {
-  const gens = { signs: genSigns, addsub: genAddSub, chain: genChain, mulsign: genMulSign, muldiv: genMulDiv, mixed: genMixed } as const;
+  const gens = { signs: genSigns, addsub: genAddSub, chain: genChain, mulsign: genMulSign, muldiv: genMulDiv, mixed: genMixed, expo: genExpo } as const;
   const gen = gens[kind];
   const out: MissionChallenge[] = [];
   const seen = new Set<string>();
