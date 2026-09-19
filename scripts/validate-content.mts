@@ -280,6 +280,17 @@ console.log("\n🗂️ 考前複習頁 prep/");
               let p = c.start;
               const path = [p, ...c.moves.map((m) => (p += m))];
               if (c.moves.length === 0 || !path.every(inLine)) err(`${ct} 散步路徑空的或走出數線：${path.join("→")}`);
+            } else if (c.type === "match") {
+              if (c.pairs.length < 3) err(`${ct} 配對至少 3 組`);
+              if (new Set(c.pairs.map((p) => p.right)).size !== c.pairs.length) err(`${ct} 右欄答案有重複，配對會判不出來`);
+            } else if (c.type === "order") {
+              if (c.items.length < 3) err(`${ct} 排序至少 3 個`);
+              if (new Set(c.items.map((it) => it.value)).size !== c.items.length) err(`${ct} 排序的值有相同的，順序會判不出來`);
+            } else if (c.type === "spot") {
+              if (c.steps.length < 2 || !c.steps[c.wrongIndex]) err(`${ct} steps 太少或 wrongIndex 超出範圍`);
+            } else if (c.type === "sci") {
+              if (!(c.mantissa >= 1 && c.mantissa < 10)) err(`${ct} 科學記號的 a 要在 1 ≤ a < 10：${c.mantissa}`);
+              if (!Number.isInteger(c.exponent) || c.exponent < -9 || c.exponent > 12) err(`${ct} 指數要在 -9～12 之間`);
             } else if (c.type === "input") {
               if (!Number.isInteger(c.answer) || Math.abs(c.answer) > 999) err(`${ct} answer 要是 3 位數內的整數`);
             }

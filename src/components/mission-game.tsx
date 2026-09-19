@@ -7,10 +7,10 @@
 
 import * as React from "react";
 import type { MissionChallenge, MissionLevel } from "@/content/prep/types";
-import { generateMission } from "@/lib/mission-gen";
+import { generateMission, sup } from "@/lib/mission-gen";
 import { touchStreak } from "@/lib/streak";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight, Check, Lightbulb, Lock, Play, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Flame, Lightbulb, Lock, Minus, Play, Plus, RotateCcw } from "lucide-react";
 
 export interface MissionRecord {
   best: number; // 最佳「一次就對」題數
@@ -32,6 +32,30 @@ export function readMissionRecords(storageKey: string): MissionRecords {
 
 const fmt = (v: number) => (v > 0 ? `${v}` : `${v}`);
 const sameSet = (a: number[], b: number[]) => a.length === b.length && a.every((v) => b.includes(v));
+function shuffled<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+// a×10ⁿ 展開成一般寫法（用字串搬小數點，避免浮點誤差）："4.5", 6 → "4,500,000"
+export function expandSci(m: string, exp: number): string {
+  if (!/^\d+(\.\d+)?$/.test(m)) return "";
+  const [int, frac = ""] = m.split(".");
+  let digits = int + frac;
+  let point = int.length + exp; // 小數點在 digits 的第幾位之後
+  if (point <= 0) {
+    digits = "0".repeat(1 - point) + digits;
+    point = 1;
+  } else if (point > digits.length) {
+    digits = digits + "0".repeat(point - digits.length);
+  }
+  const ip = digits.slice(0, point).replace(/^0+(?=\d)/, "");
+  const fp = digits.slice(point).replace(/0+$/, "");
+  return ip.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (fp ? `.${fp}` : "");
+}
 
 // ── 數線 ───────────────────────────────────────────────────────
 const W = 720;
@@ -170,6 +194,14 @@ export function MissionGame({
   const [walkStep, setWalkStep] = React.useState(0);
   const [correct, setCorrect] = React.useState(false);
   const [showHint, setShowHint] = React.useState(false);
+  const [combo, setCombo] = React.useState(0); // 這一關目前連對幾題
+  // match／order：本題的互動狀態
+  const [rightOrder, setRightOrder] = React.useState<number[]>([]); // 右欄／待選的打亂順序（索引）
+  const [selLeft, setSelLeft] = React.useState<number | null>(null);
+  const [doneIdx, setDoneIdx] = React.useState<number[]>([]); // 已配對的左索引／已排好的項目索引
+  const [slips, setSlips] = React.useState(0); // 本題點錯次數
+  const [shake, setShake] = React.useState<number | null>(null);
+  const [exp, setExp] = React.useState(0); // sci：指數
 
   React.useEffect(() => setRecords(readMissionRecords(storageKey)), [storageKey]);
 
@@ -187,11 +219,18 @@ export function MissionGame({
     return () => window.clearTimeout(t);
   }, [phase, walkStep, cur]);
 
-  function resetTurn() {
+  function resetTurn(c?: MissionChallenge) {
     setPicks([]);
     setTyped("");
     setChoice(null);
     setWalkStep(0);
+    setSelLeft(null);
+    setDoneIdx([]);
+    setSlips(0);
+    setShake(null);
+    setExp(0);
+    const n = c?.type === "match" ? c.pairs.length : c?.type === "order" ? c.items.length : 0;
+    setRightOrder(n ? shuffled(Array.from({ length: n }, (_, i) => i)) : []);
     setPhase("answer");
   }
 
@@ -203,7 +242,8 @@ export function MissionGame({
     startedAt.current = Date.now();
     setMissed(new Set());
     setShowHint(false);
-    resetTurn();
+    setCombo(0);
+    resetTurn(list[0]);
   }
 
   function answersOf(c: MissionChallenge): number[] {
@@ -214,23 +254,77 @@ export function MissionGame({
 
   function submit(choiceIndex?: number) {
     if (!cur || phase !== "answer") return;
-    const ok =
-      cur.type === "choice"
-        ? choiceIndex === cur.answerIndex
-        : cur.type === "input"
-          ? Number(typed) === cur.answer
-          : sameSet(picks, answersOf(cur));
-    if (cur.type === "choice") setChoice(choiceIndex ?? null);
+    let ok: boolean;
+    switch (cur.type) {
+      case "choice":
+        ok = choiceIndex === cur.answerIndex;
+        setChoice(choiceIndex ?? null);
+        break;
+      case "spot":
+        ok = choiceIndex === cur.wrongIndex;
+        setChoice(choiceIndex ?? null);
+        break;
+      case "input":
+        ok = Number(typed) === cur.answer;
+        break;
+      case "sci":
+        ok = Number(typed) === cur.mantissa && exp === cur.exponent;
+        break;
+      case "match":
+      case "order":
+        ok = slips === 0; // 全部完成才會叫 submit；有點錯過就不算一次就對
+        break;
+      default:
+        ok = sameSet(picks, answersOf(cur));
+    }
     setCorrect(ok);
+    setCombo((c) => (ok ? c + 1 : 0));
     if (!ok) setMissed((s) => new Set(s).add(cur.id));
     setPhase(cur.type === "walk" ? "walking" : "feedback");
+  }
+  // submit 用 ref 包起來，讓 setTimeout 裡叫到的是最新的狀態
+  const submitRef = React.useRef(submit);
+  submitRef.current = submit;
+
+  // match：點左欄再點右欄
+  function tapLeft(i: number) {
+    if (phase !== "answer" || doneIdx.includes(i)) return;
+    setSelLeft((s) => (s === i ? null : i));
+  }
+  function tapRight(i: number) {
+    if (phase !== "answer" || cur?.type !== "match" || selLeft === null || doneIdx.includes(i)) return;
+    if (i === selLeft) {
+      const d = [...doneIdx, i];
+      setDoneIdx(d);
+      setSelLeft(null);
+      if (d.length === cur.pairs.length) window.setTimeout(() => submitRef.current(), 250);
+    } else {
+      setSlips((n) => n + 1);
+      setShake(i);
+      window.setTimeout(() => setShake((x) => (x === i ? null : x)), 500);
+    }
+  }
+  // order：由小到大點
+  function tapOrder(i: number) {
+    if (phase !== "answer" || cur?.type !== "order" || doneIdx.includes(i)) return;
+    const remaining = cur.items.map((it, k) => ({ k, v: it.value })).filter((x) => !doneIdx.includes(x.k));
+    const smallest = remaining.reduce((a, b) => (b.v < a.v ? b : a));
+    if (smallest.k === i) {
+      const d = [...doneIdx, i];
+      setDoneIdx(d);
+      if (d.length === cur.items.length) window.setTimeout(() => submitRef.current(), 250);
+    } else {
+      setSlips((n) => n + 1);
+      setShake(i);
+      window.setTimeout(() => setShake((x) => (x === i ? null : x)), 500);
+    }
   }
 
   function next() {
     if (!cur || !level) return;
     const rest = correct ? queue.slice(1) : [...queue.slice(1), cur];
     setQueue(rest);
-    if (rest.length > 0) return resetTurn();
+    if (rest.length > 0) return resetTurn(rest[0]);
     // 過關：存紀錄
     const total = all.length;
     const firstTry = total - missed.size;
@@ -266,19 +360,23 @@ export function MissionGame({
     setTyped((t) => {
       if (k === "⌫") return t.slice(0, -1);
       if (k === "-") return t.startsWith("-") ? t.slice(1) : `-${t}`;
-      return t.replace("-", "").length >= 3 ? t : t + k;
+      if (k === ".") return t.includes(".") || t === "" ? t : t + k;
+      return t.replace(/[-.]/g, "").length >= 3 ? t : t + k;
     });
   }
 
   // 電腦鍵盤也能打答案
-  const canType = cur?.type === "input" && phase === "answer";
-  const typedOk = /\d/.test(typed);
+  const isSci = cur?.type === "sci";
+  const canType = (cur?.type === "input" || isSci) && phase === "answer";
+  const typedOk = /\d/.test(typed) && !typed.endsWith(".");
   React.useEffect(() => {
     if (!canType) return;
     const onKey = (e: KeyboardEvent) => {
-      if (/^[0-9]$/.test(e.key) || e.key === "-") press(e.key);
+      if (/^[0-9]$/.test(e.key) || (e.key === "-" && !isSci) || (e.key === "." && isSci)) press(e.key);
       else if (e.key === "Backspace") press("⌫");
       else if (e.key === "Enter" && typedOk) submit();
+      else if (isSci && e.key === "ArrowUp") setExp((x) => Math.min(12, x + 1));
+      else if (isSci && e.key === "ArrowDown") setExp((x) => Math.max(-9, x - 1));
       else return;
       e.preventDefault();
     };
@@ -407,6 +505,11 @@ export function MissionGame({
         <span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: soft, color }}>
           第 {levelIndex + 1} 關・{level.title}
         </span>
+        {combo >= 2 && (
+          <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-xs font-bold text-white" style={{ background: color }}>
+            <Flame className="h-3 w-3" /> 連對 {combo}
+          </span>
+        )}
         <span className="flex-1" />
         <span className="font-mono text-xs text-muted-foreground">
           還剩 {queue.length} 題・一次就對 {total - queue.length - [...missed].filter((id) => !queue.some((q) => q.id === id)).length}
@@ -432,9 +535,34 @@ export function MissionGame({
         </div>
       )}
 
-      {cur.type === "input" && phase === "answer" && (
+      {cur.type === "sci" && (
+        <div className="mt-2 rounded-xl border p-3" style={{ background: soft }}>
+          <div className="font-mono text-2xl font-black" style={{ color }}>
+            {cur.number} ={" "}
+            <span className="rounded-lg border-2 bg-card px-3 py-0.5" style={{ borderColor: color }}>{typed || "？"}</span> × 10
+            <sup className="rounded-md border-2 bg-card px-1.5 text-base" style={{ borderColor: color }}>{exp}</sup>
+          </div>
+          {phase === "answer" && (
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted-foreground">指數 n：</span>
+              <button type="button" onClick={() => setExp((x) => Math.max(-9, x - 1))} className="rounded-full border bg-card p-1.5 hover:border-primary/50" aria-label="指數減 1">
+                <Minus className="h-4 w-4" />
+              </button>
+              <span className="w-8 text-center font-mono text-lg font-black">{exp}</span>
+              <button type="button" onClick={() => setExp((x) => Math.min(12, x + 1))} className="rounded-full border bg-card p-1.5 hover:border-primary/50" aria-label="指數加 1">
+                <Plus className="h-4 w-4" />
+              </button>
+              <span className="ml-2 font-mono text-muted-foreground">
+                現在拼出來是：<b className="text-foreground">{typedOk ? expandSci(typed, exp) : "—"}</b>
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {(cur.type === "input" || cur.type === "sci") && phase === "answer" && (
         <div className="mt-3 grid max-w-[280px] grid-cols-3 gap-1.5">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "-", "0", "⌫"].map((k) => (
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", cur.type === "sci" ? "." : "-", "0", "⌫"].map((k) => (
             <button key={k} type="button" onClick={() => press(k)} className="rounded-xl border bg-card py-3 font-mono text-xl font-bold transition-colors hover:border-primary/50 active:bg-secondary">
               {k === "-" ? "+/−" : k}
             </button>
@@ -443,6 +571,83 @@ export function MissionGame({
             確定
           </button>
         </div>
+      )}
+
+      {cur.type === "match" && (
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-3">
+          <div className="grid gap-1.5">
+            {cur.pairs.map((p, i) => {
+              const done = doneIdx.includes(i);
+              return (
+                <button key={i} type="button" disabled={done || locked} onClick={() => tapLeft(i)}
+                  className={cn("rounded-xl border px-3 py-3 text-center font-mono text-lg font-bold transition-colors", done ? "border-correct bg-correct/10 text-correct" : selLeft === i ? "text-white" : "bg-card hover:border-primary/50")}
+                  style={selLeft === i && !done ? { background: color, borderColor: color } : undefined}>
+                  {p.left}
+                </button>
+              );
+            })}
+          </div>
+          <div className="grid gap-1.5">
+            {rightOrder.map((i) => {
+              const done = doneIdx.includes(i);
+              return (
+                <button key={i} type="button" disabled={done || locked} onClick={() => tapRight(i)}
+                  className={cn("rounded-xl border px-3 py-3 text-center font-mono text-lg font-bold transition-colors", done ? "border-correct bg-correct/10 text-correct" : "bg-card hover:border-primary/50", shake === i && "animate-pop border-gentle bg-gentle/15 text-gentle-foreground")}>
+                  {cur.pairs[i].right}
+                </button>
+              );
+            })}
+          </div>
+          {phase === "answer" && (
+            <div className="col-span-2 text-sm text-muted-foreground">
+              {selLeft === null ? "先點左邊一個，再點右邊和它相等的。" : "現在點右邊和它相等的那個。"}
+              {slips > 0 && <span className="ml-2 text-gentle-foreground">點錯 {slips} 次</span>}
+            </div>
+          )}
+        </div>
+      )}
+
+      {cur.type === "order" && (
+        <div className="mt-3">
+          <div className="mb-1.5 font-mono text-[11px] font-bold tracking-widest text-muted-foreground">由小到大（點下一個最小的）</div>
+          <div className="flex min-h-[52px] flex-wrap items-center gap-2 rounded-xl p-2" style={{ background: soft }}>
+            {doneIdx.map((i, k) => (
+              <span key={i} className="inline-flex items-center gap-1.5 rounded-lg bg-card px-3 py-2 font-mono text-lg font-bold shadow-sm">
+                <span className="text-xs" style={{ color }}>{k + 1}</span>
+                {cur.items[i].label}
+              </span>
+            ))}
+            {doneIdx.length === 0 && <span className="px-1 text-sm text-muted-foreground">從下面點出最小的那個</span>}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {rightOrder.filter((i) => !doneIdx.includes(i)).map((i) => (
+              <button key={i} type="button" disabled={locked} onClick={() => tapOrder(i)}
+                className={cn("rounded-xl border bg-card px-4 py-3 font-mono text-lg font-bold transition-colors hover:border-primary/50", shake === i && "animate-pop border-gentle bg-gentle/15 text-gentle-foreground")}>
+                {cur.items[i].label}
+              </button>
+            ))}
+          </div>
+          {phase === "answer" && slips > 0 && <div className="mt-2 text-sm text-gentle-foreground">點錯 {slips} 次——先在心裡算出每個的值再點。</div>}
+        </div>
+      )}
+
+      {cur.type === "spot" && (
+        <ol className="mt-3 space-y-1.5">
+          {cur.steps.map((st, i) => {
+            const isAns = locked && i === cur.wrongIndex;
+            const isWrong = locked && i === choice && i !== cur.wrongIndex;
+            return (
+              <li key={i}>
+                <button type="button" disabled={locked} onClick={() => submit(i)}
+                  className={cn("flex w-full items-center gap-3 rounded-xl border bg-card px-4 py-3 text-left font-mono text-[16px] font-bold transition-colors", !locked && "hover:border-primary/50", isAns && "border-correct bg-correct/10 text-correct", isWrong && "border-gentle bg-gentle/15 text-gentle-foreground")}>
+                  <span className="text-xs text-muted-foreground">第 {i + 1} 步</span>
+                  {st}
+                </button>
+              </li>
+            );
+          })}
+          {phase === "answer" && <li className="text-sm text-muted-foreground">哪一步算錯了？點它。</li>}
+        </ol>
       )}
 
       {(cur.type === "place" || cur.type === "walk") && (
@@ -519,7 +724,19 @@ export function MissionGame({
           <div className={cn("font-black", correct ? "text-correct" : "text-gentle-foreground")}>
             {correct
               ? "對了！"
-              : `還沒對${cur.type === "input" ? `——答案是 ${cur.answer}` : cur.type === "choice" ? "" : `——正確位置是 ${answersOf(cur).map(fmt).join("、")}（綠點）`}。這題等一下會再來一次。`}
+              : `還沒對${
+                  cur.type === "input"
+                    ? `——答案是 ${cur.answer}`
+                    : cur.type === "sci"
+                      ? `——應該是 ${cur.mantissa} × 10${sup(cur.exponent)}`
+                      : cur.type === "match" || cur.type === "order"
+                        ? `——中間點錯了 ${slips} 次`
+                        : cur.type === "spot"
+                          ? `——錯的是第 ${cur.wrongIndex + 1} 步`
+                          : cur.type === "choice"
+                            ? ""
+                            : `——正確位置是 ${answersOf(cur).map(fmt).join("、")}（綠點）`
+                }。這題等一下會再來一次。`}
           </div>
           <p className="mt-1.5 whitespace-pre-line text-[15px] leading-relaxed">{cur.why}</p>
           <button type="button" className={cn(pill, "mt-3")} style={{ background: color }} onClick={next}>

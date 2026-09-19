@@ -85,7 +85,8 @@ export interface MissionLevel {
   generator?: { kind: MissionGenKind; count: number };
 }
 
-export const MISSION_GEN_KINDS = ["signs", "addsub", "chain"] as const;
+//   mulsign＝符號雷達（幾個數相乘，只判斷正／負／0）；muldiv＝乘除快算（打答案）；mixed＝四則混合（含平方，打答案）
+export const MISSION_GEN_KINDS = ["signs", "addsub", "chain", "mulsign", "muldiv", "mixed"] as const;
 export type MissionGenKind = (typeof MISSION_GEN_KINDS)[number];
 
 interface MissionChallengeBase {
@@ -102,6 +103,14 @@ export type MissionChallenge =
   | (MissionChallengeBase & { type: "choice"; choices: string[]; answerIndex: number; layout?: "cards" })
   // 用數字鍵盤打答案（整數）；expr 有寫就用大字顯示算式
   | (MissionChallengeBase & { type: "input"; expr?: string; answer: number })
+  // 配對：左欄固定、右欄打亂，點左再點右；點錯算一次失誤（整題視為沒一次就對），全配完才算完成
+  | (MissionChallengeBase & { type: "match"; pairs: { left: string; right: string }[] })
+  // 排序：把 items 由小到大點回去（value 用來判斷順序，label 是顯示的式子）
+  | (MissionChallengeBase & { type: "order"; items: { label: string; value: number }[] })
+  // 找錯：一段別人的計算過程，點出哪一步錯了
+  | (MissionChallengeBase & { type: "spot"; steps: string[]; wrongIndex: number })
+  // 拼科學記號：打 a、用 −／＋ 調指數 n，畫面即時顯示 a×10ⁿ 展開是多少
+  | (MissionChallengeBase & { type: "sci"; number: string; mantissa: number; exponent: number })
   // 數線散步：先預測終點（點數線），再看小點一步一步走。expr 是算式，moves 是每一步位移
   | (MissionChallengeBase & { type: "walk"; expr: string; start: number; moves: number[] });
 

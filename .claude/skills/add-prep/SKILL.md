@@ -26,9 +26,10 @@ description: 從課本照片或範圍描述做一頁「考前複習頁」（重�
      範例：`science-microscope.ts` 的兩張顯微鏡。
    - `mission`：**數線闖關**（數學概念沒站穩、要「玩中學＋練到熟」時用）。一關一個概念、照順序解鎖；
      題型 `place`（點數線）／`choice`（選，`layout: "cards"` 比大小用）／`walk`（先預測終點再看小點走）／
-     `input`（數字鍵盤打答案）。每題必填 `why`＋`concept`；答錯同關回鍋。關卡加
+     `input`（數字鍵盤打答案）／`match`（配對）／`order`（由小到大點）／`spot`（找出算錯的那一步）／
+     `sci`（拼科學記號，指數一調數字跟著變）。每題必填 `why`＋`concept`；答錯同關回鍋。關卡加
      `generator: { kind, count }` 就是熟練場（`src/lib/mission-gen.ts` 隨機出題、記時間；
-     要新題型就在那裡加 kind 並登記 `MISSION_GEN_KINDS`）。範例：`math-integers-mission.ts`。
+     要新題型就在那裡加 kind 並登記 `MISSION_GEN_KINDS`）。範例：`math-integers-mission.ts`（加減）、`math-muldiv-mission.ts`（乘除、指數、科學記號，六種玩法都有）。
 3. **寫檔** `src/content/prep/<subject>-<topic>.ts`，`id` 用 `prep-<subject>-<topic>`，
    `source` 填課本頁碼。卡片 `id` 短且**整頁唯一**（`c1…`、`s1…`）。
 4. **註冊** 進 `src/content/prep/index.ts` 的 `preps`。
