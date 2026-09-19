@@ -145,7 +145,7 @@ export const prepMathIntegersMission: PrepSet = {
           id: "D1",
           title: "熟練場・去括號快答",
           goal: "看到 +(-)、-(-) 馬上知道變加還是變減。每次 12 題隨機。",
-          hint: "兩個符號一樣 → 加；不一樣 → 減。第一個數自己的括號直接拿掉、不變號。",
+          hint: "想數線：+(-b) 是往左走＝減；-(-b) 是「往左走」的相反＝往右走＝加。整理起來：兩個符號一樣→加；不一樣→減。第一個數自己的括號直接拿掉、不變號。",
           challenges: [],
           generator: { kind: "signs", count: 12 },
         },
