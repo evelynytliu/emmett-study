@@ -5,12 +5,14 @@
 ## 考試排程（exams.ts）
 
 - 2026-09-07 science 小考「1-2 科學方法流程＋顯微鏡部位」（翰林自然 1-2，課本 p.23–25（科學方法）、p.30–31（顯微鏡）） → /prep/prep-science-method, /quiz/quiz-science-method-1, /prep/prep-science-microscope, /quiz/quiz-science-microscope-1
+- 2026-09-11 chinese 作業「自學選文一：古代神話與寓言選（第 14 回）」（翰林國文 7 上自學選文一：夸父逐日、精衛填海、濫竽充數等神話與寓言） → /prep/prep-chinese-reading-traps, /quiz/quiz-chinese-reading-mistakes-1｜結果：50/100，錯：寓言抓主旨：看故事結局與人物的話，不被表面關鍵字帶走、判斷文章語氣：先分清作者是稱讚還是批評、文言寓言：先找「誰做了什麼、結果如何」，再推道理、題幹陷阱字：「何者錯誤／不同」要逐個選項判斷、成語：事半功倍、揠苗助長、謙沖自牧、神話與寓言的定義差異，錯題回鍋 quiz-chinese-reading-mistakes-1
+- 2026-09-18 chinese 作業「第一課 夏夜（第 1 回）」（翰林國文 7 上第一課 夏夜（楊喚）：字音字形、詩意解讀、新詩特徵） → /prep/prep-chinese-reading-traps, /quiz/quiz-chinese-reading-mistakes-1｜結果：50/100，錯：字音字義辨析（撒、提／驅／爛／諧）、判斷新詩語氣：從動詞、形容詞看情緒、選項陷阱字：「皆／都／唯一」要回文章核對範圍、詞彙：月亮的別稱與金烏（太陽）、新詩的特徵（格律自由），錯題回鍋 quiz-chinese-reading-mistakes-1
 
 ## 各科內容
 
 ### 國文（翰林版）
 
-考前複習頁 0・題組 1
+考前複習頁 1・題組 2
 
 - ✅ `chinese-pre-1` 先修 文言文・古今異義
   - 題組 `quiz-chinese-wenyan-1`「文言文常用字・小試身手」8 題
@@ -18,7 +20,9 @@
 - ▫️ `chinese-pre-3` 先修 成語與詞語運用
 - ▫️ `chinese-7a-1` 7上 新詩（夏夜）與白話選文
 - ▫️ `chinese-7a-2` 7上 文言選文（論語選・兒時記趣・朋友相交）
-- ▫️ `chinese-7a-3` 7上 閱讀理解與寫作
+- ✅ `chinese-7a-3` 7上 閱讀理解與寫作
+  - 複習頁 `prep-chinese-reading-traps`「讀長文三步・成語翻卡・神話 vs 寓言」17 張卡・9/11 第 14 回、9/18 第 1 回國文作業
+  - 題組 `quiz-chinese-reading-mistakes-1`「寓言主旨・陷阱字・成語（作業錯題回鍋）」12 題
 - ▫️ `chinese-7a-4` 7上 語文常識（標點符號・資訊檢索）
 
 ### 數學（康軒版）

@@ -9,7 +9,7 @@
 
 import type { SubjectId } from "./subjects";
 
-export type ExamKind = "小考" | "段考" | "模擬考" | "會考";
+export type ExamKind = "小考" | "段考" | "模擬考" | "會考" | "作業"; // 作業＝媽媽對答案的回家作業，也留紀錄看走勢
 
 export interface ExamResult {
   score?: number; // 得分（小考／段考）
@@ -46,6 +46,57 @@ export const exams: Exam[] = [
       { href: "/prep/prep-science-microscope", title: "顯微鏡部位：認圖・翻卡" },
       { href: "/quiz/quiz-science-microscope-1", title: "顯微鏡理解題（13 題）" },
     ],
+  },
+  {
+    id: "2026-09-11-chi-hw-14",
+    date: "2026-09-11",
+    subject: "chinese",
+    kind: "作業",
+    name: "自學選文一：古代神話與寓言選（第 14 回）",
+    scope: "翰林國文 7 上自學選文一：夸父逐日、精衛填海、濫竽充數等神話與寓言",
+    links: [
+      { href: "/prep/prep-chinese-reading-traps", title: "讀長文三步・成語翻卡・神話 vs 寓言" },
+      { href: "/quiz/quiz-chinese-reading-mistakes-1", title: "寓言主旨・陷阱字・成語 回鍋題組（12 題）" },
+    ],
+    result: {
+      score: 50,
+      total: 100,
+      weak: [
+        "寓言抓主旨：看故事結局與人物的話，不被表面關鍵字帶走",
+        "判斷文章語氣：先分清作者是稱讚還是批評",
+        "文言寓言：先找「誰做了什麼、結果如何」，再推道理",
+        "題幹陷阱字：「何者錯誤／不同」要逐個選項判斷",
+        "成語：事半功倍、揠苗助長、謙沖自牧",
+        "神話與寓言的定義差異",
+      ],
+      note: "短題 10/15，一則寓言問道理 5/10，題組 1/5。文章越長掉越多；錯的選項幾乎都含有文章裡的字，是用關鍵字猜，不是沒耐心。",
+      mistakesQuizId: "quiz-chinese-reading-mistakes-1",
+    },
+  },
+  {
+    id: "2026-09-18-chi-hw-1",
+    date: "2026-09-18",
+    subject: "chinese",
+    kind: "作業",
+    name: "第一課 夏夜（第 1 回）",
+    scope: "翰林國文 7 上第一課 夏夜（楊喚）：字音字形、詩意解讀、新詩特徵",
+    links: [
+      { href: "/prep/prep-chinese-reading-traps", title: "讀長文三步・成語翻卡・神話 vs 寓言" },
+      { href: "/quiz/quiz-chinese-reading-mistakes-1", title: "寓言主旨・陷阱字・成語 回鍋題組（12 題）" },
+    ],
+    result: {
+      score: 50,
+      total: 100,
+      weak: [
+        "字音字義辨析（撒、提／驅／爛／諧）",
+        "判斷新詩語氣：從動詞、形容詞看情緒",
+        "選項陷阱字：「皆／都／唯一」要回文章核對範圍",
+        "詞彙：月亮的別稱與金烏（太陽）",
+        "新詩的特徵（格律自由）",
+      ],
+      note: "配合題 5/5、楊喚詩題組 4/5：短的、具體的畫面讀得懂。錯在字音字義、詩的語氣，和「何者錯誤」「皆」這類要逐字看的選項。",
+      mistakesQuizId: "quiz-chinese-reading-mistakes-1",
+    },
   },
 ];
 
