@@ -8,8 +8,9 @@ import { prepScienceMicroscope } from "./science-microscope";
 import { prepScienceMethod } from "./science-method";
 import { prepMathIntegersMission } from "./math-integers-mission";
 import { prepMathMulDivMission } from "./math-muldiv-mission";
+import { prepChineseReadingTraps } from "./chinese-reading-traps";
 
-export const preps: PrepSet[] = [prepScienceMethod, prepScienceMicroscope, prepMathIntegersMission, prepMathMulDivMission];
+export const preps: PrepSet[] = [prepScienceMethod, prepScienceMicroscope, prepMathIntegersMission, prepMathMulDivMission, prepChineseReadingTraps];
 
 export function getPrep(id: string): PrepSet | undefined {
   return preps.find((p) => p.id === id);
