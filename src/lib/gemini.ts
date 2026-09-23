@@ -15,8 +15,9 @@ const GEMINI_ENDPOINT =
 // 預設用免費的 gemini-2.5-flash（穩定、額度寬）。想要更聰明、一樣免費，
 // 可在 .env.local 設 GEMINI_MODEL=gemini-3-flash。免費版 Flash 系列每天約 1,500 次，
 // 對一個孩子綽綽有餘。（2.5 Pro / 3 Pro 目前要付費，別填那兩個。）
+const DEFAULT_MODEL = "gemini-2.5-flash";
 export function geminiModel(): string {
-  return process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
+  return process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
 }
 
 export interface GeminiCall {
@@ -47,7 +48,25 @@ export async function callGemini({
   }
 
   const m = model || geminiModel();
+  try {
+    return await callModel(m, apiKey, system, user, signal);
+  } catch (err) {
+    // 設定的模型名稱不存在（例如 GEMINI_MODEL 填了還沒開放的版本）→ 自動改用預設模型再試一次，
+    // 不然線上所有 AI 功能會因為一個環境變數全部退回靜態。
+    const notFound = err instanceof Error && /HTTP 404/.test(err.message);
+    if (!notFound || m === DEFAULT_MODEL) throw err;
+    console.warn(`[gemini] 模型 ${m} 不存在，改用 ${DEFAULT_MODEL}`);
+    return callModel(DEFAULT_MODEL, apiKey, system, user, signal);
+  }
+}
 
+async function callModel(
+  m: string,
+  apiKey: string,
+  system: string,
+  user: string,
+  signal?: AbortSignal,
+): Promise<string> {
   const res = await fetch(`${GEMINI_ENDPOINT}/${m}:generateContent`, {
     method: "POST",
     headers: {
