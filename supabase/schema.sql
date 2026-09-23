@@ -166,6 +166,15 @@ create table if not exists public.mathconcept_prep_pool (
   updated_at timestamptz not null default now()
 );
 
+-- 數線闖關關卡紀錄（單列 jsonb：prepId:sectionIndex:levelId → {best,total,plays,missed,bestSec,lastFirstTry,t}）。
+-- 跟 prep_pool 同一套：開頁前拉下來合併、每次過關 upsert 回去。家長頁與 AI 分析從這裡讀。
+create table if not exists public.mathconcept_mission_pool (
+  id uuid primary key default gen_random_uuid(),
+  pool_key text not null unique default 'main',
+  state jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
 -- 完整先修課表：每個步驟完成紀錄（學單元 / 複習檢核點 / 結業）
 create table if not exists public.mathconcept_course_progress (
   id uuid primary key default gen_random_uuid(),
@@ -190,6 +199,7 @@ alter table public.mathconcept_quiz_attempts enable row level security;
 alter table public.mathconcept_hanzi_attempts enable row level security;
 alter table public.mathconcept_hanzi_pool enable row level security;
 alter table public.mathconcept_prep_pool enable row level security;
+alter table public.mathconcept_mission_pool enable row level security;
 
 drop policy if exists "mathconcept allow all progress" on public.mathconcept_progress;
 create policy "mathconcept allow all progress" on public.mathconcept_progress
@@ -241,6 +251,10 @@ create policy "mathconcept allow all hanzi attempts" on public.mathconcept_hanzi
 
 drop policy if exists "mathconcept allow all prep pool" on public.mathconcept_prep_pool;
 create policy "mathconcept allow all prep pool" on public.mathconcept_prep_pool
+  for all using (true) with check (true);
+
+drop policy if exists "mathconcept allow all mission pool" on public.mathconcept_mission_pool;
+create policy "mathconcept allow all mission pool" on public.mathconcept_mission_pool
   for all using (true) with check (true);
 
 drop policy if exists "mathconcept allow all hanzi pool" on public.mathconcept_hanzi_pool;

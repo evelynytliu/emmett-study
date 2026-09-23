@@ -515,7 +515,7 @@ export function PrepPlayer({ prep }: { prep: PrepSet }) {
             return (
               <section key={si}>
                 <SectionHead title={s.title} intro={s.intro} color={color} soft={soft} chip={`${s.levels.length} 關`} />
-                <MissionGame levels={s.levels} line={s.line} color={color} soft={soft} storageKey={`gz-prep:mission:${prep.id}:${si}`} />
+                <MissionGame levels={s.levels} line={s.line} color={color} soft={soft} prepId={prep.id} sectionIndex={si} />
               </section>
             );
           }

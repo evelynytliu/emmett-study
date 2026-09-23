@@ -3,32 +3,23 @@
 // 數線闖關（複習頁的 mission 區塊）。
 //   一關一個概念，照順序解鎖。每題先自己作答：點數線（place）、選答案（choice）、
 //   或先預測終點再看小點一步一步走（walk）。對錯都會看到「為什麼」。
-//   答錯的題排到這一關最後回鍋，全部答對才過關；成績記「一次就對 X / N」，存本機。
+//   答錯的題排到這一關最後回鍋，全部答對才過關；成績記「一次就對 X / N」（mission-storage：本機＋雲端）。
 
 import * as React from "react";
 import type { MissionChallenge, MissionLevel } from "@/content/prep/types";
 import { generateMission, sup } from "@/lib/mission-gen";
+import {
+  missionUid,
+  recordsForSection,
+  saveMissionPool,
+  syncMissionPool,
+  type MissionPoolState,
+  type MissionRecord,
+  type MissionRecords,
+} from "@/lib/mission-storage";
 import { touchStreak } from "@/lib/streak";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight, Check, Flame, Lightbulb, Lock, Minus, Play, Plus, RotateCcw } from "lucide-react";
-
-export interface MissionRecord {
-  best: number; // 最佳「一次就對」題數
-  total: number;
-  plays: number;
-  missed: string[]; // 最近一次卡住的概念
-  bestSec?: number; // 全部一次就對時的最快秒數（熟練場用）
-}
-export type MissionRecords = Record<string, MissionRecord>;
-
-export function readMissionRecords(storageKey: string): MissionRecords {
-  try {
-    const raw = window.localStorage.getItem(storageKey);
-    return raw ? (JSON.parse(raw) as MissionRecords) : {};
-  } catch {
-    return {};
-  }
-}
 
 const fmt = (v: number) => (v > 0 ? `${v}` : `${v}`);
 const sameSet = (a: number[], b: number[]) => a.length === b.length && a.every((v) => b.includes(v));
@@ -172,15 +163,18 @@ export function MissionGame({
   line,
   color,
   soft,
-  storageKey,
+  prepId,
+  sectionIndex,
 }: {
   levels: MissionLevel[];
   line: { min: number; max: number };
   color: string;
   soft: string;
-  storageKey: string;
+  prepId: string;
+  sectionIndex: number;
 }) {
-  const [records, setRecords] = React.useState<MissionRecords>({});
+  const [pool, setPool] = React.useState<MissionPoolState>({});
+  const records: MissionRecords = React.useMemo(() => recordsForSection(pool, prepId, sectionIndex), [pool, prepId, sectionIndex]);
   const [levelId, setLevelId] = React.useState<string | null>(null);
   const [all, setAll] = React.useState<MissionChallenge[]>([]); // 這一輪的全部題目（熟練場每次重出）
   const [queue, setQueue] = React.useState<MissionChallenge[]>([]);
@@ -203,7 +197,9 @@ export function MissionGame({
   const [shake, setShake] = React.useState<number | null>(null);
   const [exp, setExp] = React.useState(0); // sci：指數
 
-  React.useEffect(() => setRecords(readMissionRecords(storageKey)), [storageKey]);
+  React.useEffect(() => {
+    void syncMissionPool().then(setPool);
+  }, [prepId, sectionIndex]);
 
   const level = levels.find((l) => l.id === levelId) ?? null;
   const cur = queue[0];
@@ -337,14 +333,12 @@ export function MissionGame({
       plays: (prev?.plays ?? 0) + 1,
       missed: [...new Set(all.filter((c) => missed.has(c.id)).map((c) => c.concept))],
       bestSec: firstTry === total ? Math.min(prev?.bestSec ?? Infinity, sec) : prev?.bestSec,
+      lastFirstTry: firstTry,
+      t: new Date().toISOString(),
     };
-    const nextRecords = { ...records, [level.id]: rec };
-    setRecords(nextRecords);
-    try {
-      window.localStorage.setItem(storageKey, JSON.stringify(nextRecords));
-    } catch {
-      /* 存不進去也別讓孩子卡住 */
-    }
+    const nextPool = { ...pool, [missionUid(prepId, sectionIndex, level.id)]: rec };
+    setPool(nextPool);
+    void saveMissionPool(nextPool);
     touchStreak();
     setPhase("done");
   }

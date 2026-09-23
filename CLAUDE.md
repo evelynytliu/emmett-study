@@ -60,6 +60,7 @@
 
 - 每個模組一個 `src/lib/*-storage.ts`：**localStorage 優先，Supabase 可選，失敗一律退回本機**。
 - 翻卡狀態：`prep-storage.ts`（單列 jsonb `mathconcept_prep_pool`，開頁合併、標記後 upsert）。
+- 闖關紀錄：`mission-storage.ts`（單列 jsonb `mathconcept_mission_pool`）；家長頁 `mission-parent-summary.tsx` 讀它，「AI 分析闖關」走 `/api/mission-review`。
 - 連續天數：`streak.ts` 只存本機（`gz-streak`），純激勵，不上雲。
 - **存過紀錄的 id、key 都不能改**（quiz id、prep id、card id、exam id、localStorage key）。
 

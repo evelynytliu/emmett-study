@@ -21,6 +21,7 @@ import { QuizParentSummary } from "@/components/quiz-parent-summary";
 import { HanziParentSummary } from "@/components/hanzi-parent-summary";
 import { ExamParentSummary } from "@/components/exam-parent-summary";
 import { PrepParentSummary } from "@/components/prep-parent-summary";
+import { MissionParentSummary } from "@/components/mission-parent-summary";
 import {
   getAllPracticeDataCloud,
   syncPracticeLocalToSupabase,
@@ -309,7 +310,7 @@ export default function ParentPage() {
       </div>
       <h1 className="text-2xl font-bold tracking-tight">家長檢視</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        由上而下：學校考試（成績走勢、錯的概念）→ 考前複習頁的回鍋狀況 → 各科線上題目 →
+        由上而下：學校考試（成績走勢、錯的概念）→ 考前複習頁的回鍋狀況 → 數線闖關（AI 分析）→ 各科線上題目 →
         國文形音義／文言文 → 封存的暑假先修（數學五段式單元）。
       </p>
 
@@ -318,6 +319,9 @@ export default function ParentPage() {
 
       {/* 考前複習頁：各頁翻卡的掌握狀況 */}
       <PrepParentSummary />
+
+      {/* 數線闖關：各關一次就對／卡住的概念／AI 分析 */}
+      <MissionParentSummary />
 
       {/* 提示：未啟用雲端時，資料只在孩子的裝置上 */}
       {!isSupabaseEnabled && (
